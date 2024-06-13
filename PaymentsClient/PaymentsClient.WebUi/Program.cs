@@ -1,6 +1,6 @@
-using PaymentClient.WebUi.Components;
+using PaymentsClient.WebUi.Components;
 
-namespace PaymentClient.WebUi;
+namespace PaymentsClient.WebUi;
 
 public class Program
 {
@@ -27,7 +27,8 @@ public class Program
         app.UseStaticFiles();
         app.UseAntiforgery();
 
-        app.MapRazorComponents<App>()
+        app
+            .MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
 
         app.Run();
