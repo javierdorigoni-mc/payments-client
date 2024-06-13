@@ -1,5 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentsClient.WebApi", "PaymentsClient.WebApi\PaymentsClient.WebApi.csproj", "{10337D5F-5C31-4E79-B051-9A5C00EAB4E5}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentsClient.WebUi", "PaymentsClient.WebUi\PaymentsClient.WebUi.csproj", "{0268DA12-E713-40E7-B53D-49DED15A47E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentsClient.Domain", "PaymentsClient.Domain\PaymentsClient.Domain.csproj", "{017F5A38-291A-4745-B23D-5B495087D6C8}"
@@ -26,5 +28,9 @@ Global
 		{F97E6DCC-7DF2-451E-9B65-93FE6C715293}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F97E6DCC-7DF2-451E-9B65-93FE6C715293}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F97E6DCC-7DF2-451E-9B65-93FE6C715293}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10337D5F-5C31-4E79-B051-9A5C00EAB4E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10337D5F-5C31-4E79-B051-9A5C00EAB4E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10337D5F-5C31-4E79-B051-9A5C00EAB4E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10337D5F-5C31-4E79-B051-9A5C00EAB4E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
