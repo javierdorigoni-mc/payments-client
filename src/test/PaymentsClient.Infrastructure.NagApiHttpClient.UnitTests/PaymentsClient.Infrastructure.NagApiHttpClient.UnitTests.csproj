@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\..\PaymentsClient.Infrastructure.NagApiHttpClient\PaymentsClient.Infrastructure.NagApiHttpClient.csproj" />
+    </ItemGroup>
+</Project>
