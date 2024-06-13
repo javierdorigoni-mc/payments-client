@@ -1,0 +1,6 @@
+@PaymentsClient.WebApi_HostAddress = http://localhost:5031
+
+GET {{PaymentsClient.WebApi_HostAddress}}/api/ping/
+Accept: application/json
+
+###
