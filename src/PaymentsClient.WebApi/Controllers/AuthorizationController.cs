@@ -1,25 +1,36 @@
 using Microsoft.AspNetCore.Mvc;
 using PaymentsClient.Domain.Models;
+using PaymentsClient.Domain.Services;
 
 namespace PaymentsClient.WebApi.Controllers;
 
 [ApiController]
 [Route("api/authorization")]
 public class AuthorizationController : ControllerBase
-{
-    private readonly ILogger<PingController> _logger;
-
-    public AuthorizationController(ILogger<PingController> logger)
+{    
+    private readonly INagApiClientService _nagApiClientService;
+    private readonly ILogger<AuthorizationController> _logger;
+    
+    public AuthorizationController(
+        INagApiClientService nagApiClientService,
+        ILogger<AuthorizationController> logger)
     {
+        _nagApiClientService = nagApiClientService;
         _logger = logger;
     }
 
-    [HttpPost("authorization/initialize")]
-    public IActionResult InitializeAuthorization(
+    [HttpPost("initialize")]
+    public async Task<IActionResult> InitializeAsync(
         [FromBody] InitializeAuthorizationRequest initializeAuthorizationRequest, 
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Ping called");
-        return Ok("Pong");
+        var result = await _nagApiClientService.InitializeAuthenticationAsync(initializeAuthorizationRequest, cancellationToken);
+
+        if (result.IsSuccessful)
+        {
+            return Ok(result.Value);
+        }
+        
+        return BadRequest(result.Error);
     }
 }

@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <ItemGroup>
-        <ProjectReference Include="..\..\PaymentsClient.WebApi\PaymentsClient.WebApi.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PaymentsClient.WebApi\PaymentsClient.WebApi.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,3 +1,5 @@
+using PaymentsClient.Domain;
+using PaymentsClient.Infrastructure.NagApiHttpClient;
 using PaymentsClient.WebUi.Components;
 
 namespace PaymentsClient.WebUi;
@@ -11,7 +13,10 @@ public class Program
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
-
+        
+        builder.Services.AddDomainServices();
+        builder.Services.AddNagApiHttpClientServices(builder.Configuration);
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

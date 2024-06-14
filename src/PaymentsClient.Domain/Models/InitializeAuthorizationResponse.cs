@@ -1,6 +1,3 @@
 namespace PaymentsClient.Domain.Models;
 
-public class InitializeAuthorizationResponse
-{
-    
-}
+public record InitializeAuthorizationResponse(Uri AuthUrl, string SessionId);
