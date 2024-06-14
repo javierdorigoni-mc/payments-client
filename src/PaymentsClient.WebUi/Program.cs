@@ -10,12 +10,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-        builder.Services.AddRazorComponents()
-            .AddInteractiveServerComponents();
+        builder.Configuration.AddUserSecrets<Program>();
         
         builder.Services.AddDomainServices();
         builder.Services.AddNagApiHttpClientServices(builder.Configuration);
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents();
         
         var app = builder.Build();
 

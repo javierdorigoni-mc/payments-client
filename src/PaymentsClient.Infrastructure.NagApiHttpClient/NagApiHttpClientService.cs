@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PaymentsClient.Domain.Models;
@@ -28,6 +29,7 @@ public class NagApiHttpClientService : INagApiClientService
         try
         {
             var httpRequest = CreateHttpRequestMessage(request, HttpMethod.Post, "v1/authentication/initialize");
+            
             var httpResponse = await _httpClient.SendAsync(httpRequest, cancellationToken);
 
             httpResponse.EnsureSuccessStatusCode();
@@ -35,8 +37,8 @@ public class NagApiHttpClientService : INagApiClientService
             var stringContentResponse = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
             
             return Result<InitializeAuthorizationResponse>.Success(
-                JsonSerializer.Deserialize<InitializeAuthorizationResponse>(stringContentResponse) 
-                ?? throw new ArgumentNullException("HttpResponse", "Unable to deserialize Http Response Body"));
+                JsonSerializer.Deserialize<InitializeAuthorizationResponse>(stringContentResponse)
+                ?? throw new ArgumentNullException("HttpResponse","Unable to deserialize Http Response Body"));
         }
         catch (Exception e)
         {

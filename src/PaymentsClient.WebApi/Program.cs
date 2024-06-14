@@ -10,10 +10,13 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        builder.Configuration
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.*.json", optional: true, reloadOnChange: true)
+            .AddUserSecrets<Program>(reloadOnChange: true, optional: false);
+
         builder.Services.AddDomainServices();
         builder.Services.AddNagApiHttpClientServices(builder.Configuration);
-
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
