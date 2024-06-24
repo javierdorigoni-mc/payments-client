@@ -1,0 +1,14 @@
+﻿@page "/redirect"
+@using Microsoft.AspNetCore.Mvc
+
+<PageTitle>Redirect</PageTitle>
+
+<h1>Redirect</h1>
+
+<p>Authentication Code: @Code</p>
+
+@code {
+    [FromQuery]
+    [Parameter]
+    public string? Code { get; set; }
+}

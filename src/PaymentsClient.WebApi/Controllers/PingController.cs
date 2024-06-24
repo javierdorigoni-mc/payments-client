@@ -13,7 +13,7 @@ public class PingController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet(Name = "ping")]
+    [HttpGet("ping")]
     public IActionResult Ping()
     {
         _logger.LogInformation("Ping called");
