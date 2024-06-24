@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using PaymentsClient.Domain.Services;
+using PaymentsClient.Domain;
 using Polly;
 using Polly.Extensions.Http;
 

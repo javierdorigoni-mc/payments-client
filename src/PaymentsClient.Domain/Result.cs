@@ -1,4 +1,4 @@
-namespace PaymentsClient.Domain.Models;
+namespace PaymentsClient.Domain;
 
 public class Result<T> where T : class
 {

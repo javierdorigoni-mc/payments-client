@@ -1,5 +1,4 @@
 using PaymentsClient.Domain;
-using PaymentsClient.Domain.Models;
 using PaymentsClient.Infrastructure.NagApiHttpClient;
 
 namespace PaymentsClient.WebApi;
