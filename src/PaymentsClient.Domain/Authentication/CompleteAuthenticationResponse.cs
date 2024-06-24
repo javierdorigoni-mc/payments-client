@@ -5,16 +5,16 @@ namespace PaymentsClient.Domain.Authentication;
 public record CompleteAuthenticationResponse
 {
     [JsonPropertyName("session")] 
-    public SessionResponse? Session { get; init; }
+    public SessionModel? Session { get; init; }
     
     [JsonPropertyName("login")]
-    public LoginResponse? Login { get; init; }
+    public LoginModel? Login { get; init; }
     
     [JsonPropertyName("providerId")]
     public string? ProviderId { get; init; }
 }
 
-public record SessionResponse
+public record SessionModel
 {   
     [JsonPropertyName("expires")]
     public DateTimeOffset? Expires { get; init; }
@@ -23,7 +23,7 @@ public record SessionResponse
     public string? AccessToken { get; init; }
 }
 
-public class LoginResponse
+public class LoginModel
 {
     [JsonPropertyName("providerId")]
     public string? ProviderId { get; init; }

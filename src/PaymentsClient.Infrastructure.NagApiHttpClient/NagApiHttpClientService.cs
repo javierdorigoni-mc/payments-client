@@ -1,7 +1,7 @@
-using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PaymentsClient.Domain;
+using PaymentsClient.Domain.Accounts;
 using PaymentsClient.Domain.Authentication;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient;
@@ -21,27 +21,43 @@ public class NagApiHttpClientService : INagApiClientService
     
     public async Task<Result<InitializeAuthenticationResponse>> InitializeAuthenticationAsync(InitializeAuthenticationRequest request, CancellationToken cancellationToken = default)
     {
-        var httpRequestMessage = CreateHttpRequestMessage(request, HttpMethod.Post, "v1/authentication/initialize");
+        var httpRequestMessage = HttpRequestMessageBuilder
+            .Create()
+            .WithHttpMethod(HttpMethod.Post)
+            .WithRequestUri("v1/authentication/initialize")
+            .WithJsonSerializedContent(request)
+            .Build();
+        
         var response = await ExecuteHttpRequestAsync<InitializeAuthenticationResponse>(httpRequestMessage, cancellationToken);
+        
         return response;
     }
     
     public async Task<Result<CompleteAuthenticationResponse>> ExchangeTokenAsync(CompleteAuthenticationRequest request, CancellationToken cancellationToken = default)
     {
-        var httpRequestMessage = CreateHttpRequestMessage(request, HttpMethod.Post, "v1/authentication/tokens");
+        var httpRequestMessage = HttpRequestMessageBuilder
+            .Create()
+            .WithHttpMethod(HttpMethod.Post)
+            .WithRequestUri("v1/authentication/tokens")
+            .WithJsonSerializedContent(request)
+            .Build();   
+        
         var response = await ExecuteHttpRequestAsync<CompleteAuthenticationResponse>(httpRequestMessage, cancellationToken);
+        
         return response;
     }
-
-    private HttpRequestMessage CreateHttpRequestMessage<T>(
-        T bodyRequest, 
-        HttpMethod httpMethod, 
-        string uriPath) where T : class
-    {
-        return new HttpRequestMessage(httpMethod, uriPath)
-        {
-            Content = JsonContent.Create(bodyRequest)
-        };
+    
+    public async Task<Result<GetAccountsResponse>> GetAccountsAsync(GetAccountsRequest request, CancellationToken cancellationToken = default)
+    {        
+        var httpRequestMessage = HttpRequestMessageBuilder
+            .Create()
+            .WithHttpMethod(HttpMethod.Get)
+            .WithRequestUri("v2/accounts")
+            .WithAuthorizationBearerTokenHeader(request.AccessToken)
+            .Build();
+        
+        var response = await ExecuteHttpRequestAsync<GetAccountsResponse>(httpRequestMessage, cancellationToken);
+        return response;
     }
     
     private async Task<Result<TResponse>> ExecuteHttpRequestAsync<TResponse>(
