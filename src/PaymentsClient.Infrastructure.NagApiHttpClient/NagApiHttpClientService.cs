@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PaymentsClient.Domain;
@@ -57,6 +58,23 @@ public class NagApiHttpClientService : INagApiClientService
             .Build();
         
         var response = await ExecuteHttpRequestAsync<GetAccountsResponse>(httpRequestMessage, cancellationToken);
+        
+        return response;
+    }
+    
+    public async Task<Result<GetTransactionsResponse>> GetTransactionsAsync(GetTransactionsRequest request, CancellationToken cancellationToken = default)
+    {        
+        var httpRequestMessage = HttpRequestMessageBuilder
+            .Create()
+            .WithHttpMethod(HttpMethod.Get)
+            .WithRequestUri($"v2/accounts/{request.AccountId}/transactions")
+            .WithOptionalQueryStringParameter("fromDate", request.FromDate)
+            .WithOptionalQueryStringParameter("withDetails", request.WithDetails?.ToString().ToLowerInvariant())
+            .WithAuthorizationBearerTokenHeader(request.AccessToken)
+            .Build();
+        
+        var response = await ExecuteHttpRequestAsync<GetTransactionsResponse>(httpRequestMessage, cancellationToken);
+        
         return response;
     }
     

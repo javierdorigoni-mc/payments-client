@@ -29,18 +29,18 @@ public class AccountsController : ControllerBase
         return BadRequest(result.Error);
     }
     
-    // [HttpPost("transactions")]
-    // public async Task<IActionResult> GetTransactionsAsync(
-    //     [FromBody] GetAccountsRequest request, 
-    //     CancellationToken cancellationToken = default)
-    // {
-    //     var result = await _authenticationService.CompleteAuthenticationAsync(request, cancellationToken);
-    //
-    //     if (result.IsSuccessful)
-    //     {
-    //         return Ok(result.Value);
-    //     }
-    //     
-    //     return BadRequest(result.Error);
-    // }
+    [HttpPost("transactions")]
+    public async Task<IActionResult> GetTransactionsAsync(
+        [FromBody] GetTransactionsRequest request, 
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _accountsService.GetTransactionsAsync(request, cancellationToken);
+    
+        if (result.IsSuccessful)
+        {
+            return Ok(result.Value);
+        }
+        
+        return BadRequest(result.Error);
+    }
 }

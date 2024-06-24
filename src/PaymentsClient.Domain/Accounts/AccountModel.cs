@@ -14,13 +14,13 @@ public record AccountModel
     public string? Name { get; init; }
     
     [JsonPropertyName("number")] 
-    public AccountNumber? AccountNumber { get; init; }
+    public AccountDetailsModel? AccountNumberDetails { get; init; }
     
     [JsonPropertyName("bookedBalance")] 
-    public Balance? BookedBalance { get; init; }
+    public AmmountModel? BookedBalance { get; init; }
     
     [JsonPropertyName("availableBalance")] 
-    public Balance? AvailableBalance { get; init; }
+    public AmmountModel? AvailableBalance { get; init; }
     
     [JsonPropertyName("type")]
     public string? Type { get; init; }
@@ -29,24 +29,6 @@ public record AccountModel
     public Features? Features { get; init; }
 }
 
-public record AccountNumber
-{       
-    [JsonPropertyName("bbanType")]
-    public string? BbanType { get; init; }
-
-    [JsonPropertyName("bban")]
-    public string? Bban { get; init; }
-
-    [JsonPropertyName("iban")]
-    public string? Iban { get; init; }
-
-    [JsonPropertyName("card")]
-    public string? Card { get; init; }
-
-    [JsonPropertyName("bbanParsed")]
-    public BbanParsed? BbanParsed { get; set; }
-}    
-
 public record BbanParsed
 {
     [JsonPropertyName("bankCode")]
@@ -54,15 +36,6 @@ public record BbanParsed
 
     [JsonPropertyName("accountNumber")]
     public string? AccountNumber { get; init; }
-}
-
-public record Balance
-{        
-    [JsonPropertyName("value")]
-    public double? Value { get; init; }
-
-    [JsonPropertyName("currency")]
-    public string? Currency { get; init; }
 }
 
 public record Features

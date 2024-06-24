@@ -13,4 +13,9 @@ public class AccountsService : IAccountsService
     {
         return await _nagApiClientService.GetAccountsAsync(request, cancellationToken);
     }
+    
+    public async Task<Result<GetTransactionsResponse>> GetTransactionsAsync(GetTransactionsRequest request, CancellationToken cancellationToken = default)
+    {
+        return await _nagApiClientService.GetTransactionsAsync(request, cancellationToken);
+    }
 }
