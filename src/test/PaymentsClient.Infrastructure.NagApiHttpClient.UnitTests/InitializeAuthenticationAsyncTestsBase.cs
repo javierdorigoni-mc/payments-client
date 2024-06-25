@@ -1,13 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
 using AutoFixture.NUnit3;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using PaymentsClient.Domain.Authentication;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 
-public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTests
+public class InitializeAuthenticationAsyncTestsBase : NagApiHttpClientServiceTestsBase
 {
     [Test]
     [InlineAutoData("https://auth.example.com/auth/start", "some-session-id")]
@@ -78,5 +79,14 @@ public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTests
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
         Assert.That(string.Equals(result.Error, "There is an issue with your request, please verify the logs."), Is.True);
+        Logger
+            .Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
     }
 }

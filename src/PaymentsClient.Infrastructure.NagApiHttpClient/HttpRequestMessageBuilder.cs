@@ -1,16 +1,15 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using Microsoft.Extensions.Primitives;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient;
 
 public class HttpRequestMessageBuilder
 {   
-    private HttpMethod? _httpMethod = null;
+    private HttpMethod? _httpMethod;
     private string _requestUri = string.Empty;
-    private HttpContent? _httpContent = null;
-    private AuthenticationHeaderValue? _authenticationHeader = null;
+    private HttpContent? _httpContent;
+    private AuthenticationHeaderValue? _authenticationHeader;
 
     private HttpRequestMessageBuilder() { }
 
@@ -33,7 +32,7 @@ public class HttpRequestMessageBuilder
     
     public HttpRequestMessageBuilder WithOptionalQueryStringParameter(string queryStringName, string? queryStringValue)
     {
-        if (string.IsNullOrEmpty(_requestUri) || string.IsNullOrEmpty(queryStringValue))
+        if (string.IsNullOrWhiteSpace(_requestUri) || string.IsNullOrWhiteSpace(queryStringValue))
         {
             return this;
         }

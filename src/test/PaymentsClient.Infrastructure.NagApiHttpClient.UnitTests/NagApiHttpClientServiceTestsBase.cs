@@ -1,18 +1,19 @@
 using Microsoft.Extensions.Logging;
 using Moq;
+using Moq.Protected;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
-public abstract class NagApiHttpClientServiceTests
+public abstract class NagApiHttpClientServiceTestsBase
 {
     protected readonly Mock<HttpMessageHandler> HttpMessageHandler;
     protected HttpClient HttpClient;
     protected Mock<ILogger<NagApiHttpClientService>> Logger;
     protected NagApiHttpClientService NagApiHttpClientService;
 
-    public NagApiHttpClientServiceTests()
+    public NagApiHttpClientServiceTestsBase()
     {
         HttpMessageHandler = new Mock<HttpMessageHandler>();
         HttpClient = new HttpClient(HttpMessageHandler.Object)
@@ -23,7 +24,6 @@ public abstract class NagApiHttpClientServiceTests
         HttpClient.DefaultRequestHeaders.Add("X-Client-Secret", "some-client-secret");
         
         Logger = new Mock<ILogger<NagApiHttpClientService>>();
-
         NagApiHttpClientService = new NagApiHttpClientService(HttpClient, Logger.Object);
     }
 }

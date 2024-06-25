@@ -1,30 +1,25 @@
+using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Json;
 using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using PaymentsClient.Domain.Authentication;
+using PaymentsClient.Domain.Accounts;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 
-public class ExchangeTokenAsyncTestsBase : NagApiHttpClientServiceTestsBase
+public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
 {
     [Test]
     [AutoData]
     public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful(
-        string code,
-        DateTimeOffset? sessionExpires,
-        string sessionAccessToken,
-        string providerId,
-        DateTimeOffset? loginExpires,
-        string loginToken,
-        bool loginSupportsUnattended,
-        string loginLabel,
-        string loginSubjectId)
+        string accessToken,
+        string? pagingToken,
+        string accountId)
     {
         // Arrange
-        var request = new CompleteAuthenticationRequest(code);
+        var request = new GetAccountsRequest(accessToken);
         
         HttpMessageHandler
             .Protected()
@@ -35,54 +30,40 @@ public class ExchangeTokenAsyncTestsBase : NagApiHttpClientServiceTestsBase
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = JsonContent.Create(new CompleteAuthenticationResponse
+                Content = JsonContent.Create(new GetAccountsResponse()
                 {
-                    Session = new SessionModel
-                    {
-                        Expires = sessionExpires,
-                        AccessToken = sessionAccessToken
-                    },
-                    Login = new LoginModel
-                    {
-                        ProviderId = providerId,
-                        Expires = loginExpires,
-                        LoginToken = loginToken,
-                        SupportsUnattended = loginSupportsUnattended,
-                        Label = loginLabel,
-                        SubjectId = loginSubjectId
-                    },
-                    ProviderId = providerId
+                    Accounts = ImmutableArray<AccountModel>.Empty,
+                    PagingToken = pagingToken
                 })
             });
 
         // Act
-        var result = await NagApiHttpClientService.ExchangeTokenAsync(request);
+        var result = await NagApiHttpClientService.GetAccountsAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.Login, Is.Not.Null);
-        Assert.That(result.Value.Session, Is.Not.Null);
-        Assert.That(result.Value.ProviderId, Is.Not.Null);
+        Assert.That(result.Value.Accounts, Is.Empty);
+        Assert.That(string.Equals(result.Value.PagingToken, pagingToken), Is.True);
         HttpMessageHandler
             .Protected()
             .Verify(
                 "SendAsync",
                 Times.Once(),
                 ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == HttpMethod.Post &&
-                    req.RequestUri == new Uri("https://api.test.com/v1/authentication/tokens") &&
+                    req.Method == HttpMethod.Get &&
+                    req.RequestUri == new Uri("https://api.test.com/v2/accounts") &&
                     req.Headers.Contains("X-Client-Id") &&
                     req.Headers.Contains("X-Client-Secret") && 
-                    req.Content != null),
+                    req.Headers.Contains("Authorization")),
                 ItExpr.IsAny<CancellationToken>());
     }
     
     [Test, AutoData]
-    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors(string code)
+    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors(string accessToken)
     {
         // Arrange
-        var request = new CompleteAuthenticationRequest(code);
+        var request = new GetAccountsRequest(accessToken);
         
         HttpMessageHandler
             .Protected()
@@ -93,7 +74,7 @@ public class ExchangeTokenAsyncTestsBase : NagApiHttpClientServiceTestsBase
             .ThrowsAsync(new HttpRequestException("Request failed"));
 
         // Act
-        var result = await NagApiHttpClientService.ExchangeTokenAsync(request);
+        var result = await NagApiHttpClientService.GetAccountsAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
