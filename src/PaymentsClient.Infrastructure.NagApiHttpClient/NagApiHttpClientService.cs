@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PaymentsClient.Domain;
@@ -96,7 +95,7 @@ public class NagApiHttpClientService : INagApiClientService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger.LogError(ex.Message);
             return Result<TResponse>.Failure("There is an issue with your request, please verify the logs.");
         }
     }
