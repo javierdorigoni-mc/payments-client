@@ -1,7 +1,5 @@
 using AutoFixture;
-using AutoFixture.Kernel;
 using Moq;
-using PaymentsClient.Domain.Accounts;
 using PaymentsClient.Domain.Authentication;
 
 namespace PaymentsClient.Domain.UnitTests;

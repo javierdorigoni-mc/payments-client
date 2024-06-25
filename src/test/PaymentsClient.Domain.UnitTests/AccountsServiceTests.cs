@@ -45,19 +45,21 @@ public class AccountsServiceTests
     public async Task GivenValidRequest_WhenGetTransactionsAsyncCalled_ThenReturnsExpectedResult()
     {
         // Arrange
-        var request = _fixture.Create<GetTransactionsRequest>();
-        var expectedResponse = _fixture.Create<Result<GetTransactionsResponse>>();
+        var getTransactionsRequest = _fixture.Create<GetTransactionsRequest>();
+        var transactionFixture = _fixture.Create<TransactionModel>();
+        var getTransactionsResponse = new GetTransactionsResponse() { Transactions = [transactionFixture] };
         _nagApiClientService
-            .Setup(x => x.GetTransactionsAsync(request, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedResponse);
+            .Setup(x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<GetTransactionsResponse>.Success(getTransactionsResponse));
 
         // Act
-        var result = await _accountsService.GetTransactionsAsync(request);
+        var result = await _accountsService.GetTransactionsAsync(getTransactionsRequest);
 
         // Assert
-        Assert.That(expectedResponse, Is.EqualTo(result));
+        Assert.That(result.IsSuccessful, Is.True);
+        Assert.That(getTransactionsResponse, Is.EqualTo(result.Value));
         _nagApiClientService
-            .Verify(x => x.GetTransactionsAsync(request, It.IsAny<CancellationToken>())
+            .Verify(x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>())
                 , Times.Once);
     }
 
@@ -65,20 +67,22 @@ public class AccountsServiceTests
     public async Task GivenCancellationToken_WhenGetAccountsAsyncCalled_ThenCancellationTokenIsPassed()
     {
         // Arrange
-        var request = _fixture.Create<GetAccountsRequest>();
-        var expectedResponse = _fixture.Create<Result<GetAccountsResponse>>();
+        var getAccountsRequest = _fixture.Create<GetAccountsRequest>();
+        var accountFixture = _fixture.Create<AccountModel>();
+        var getAccountResponse = new GetAccountsResponse() { Accounts = [accountFixture] };
         var cancellationToken = new CancellationTokenSource().Token;
         _nagApiClientService
-            .Setup(x => x.GetAccountsAsync(request, cancellationToken))
-            .ReturnsAsync(expectedResponse);
+            .Setup(x => x.GetAccountsAsync(getAccountsRequest, cancellationToken))
+            .ReturnsAsync(Result<GetAccountsResponse>.Success(getAccountResponse));
 
         // Act
-        var result = await _accountsService.GetAccountsAsync(request, cancellationToken);
+        var result = await _accountsService.GetAccountsAsync(getAccountsRequest, cancellationToken);
 
         // Assert
-        Assert.That(expectedResponse, Is.EqualTo(result));
+        Assert.That(result.IsSuccessful, Is.True);
+        Assert.That(getAccountResponse, Is.EqualTo(result.Value));
         _nagApiClientService
-            .Verify(x => x.GetAccountsAsync(request, cancellationToken)
+            .Verify(x => x.GetAccountsAsync(getAccountsRequest, cancellationToken)
                 , Times.Once);
     }
 
@@ -86,18 +90,22 @@ public class AccountsServiceTests
     public async Task GivenCancellationToken_WhenGetTransactionsAsyncCalled_ThenCancellationTokenIsPassed()
     {
         // Arrange
-        var request = _fixture.Create<GetTransactionsRequest>();
-        var expectedResponse = _fixture.Create<Result<GetTransactionsResponse>>();
+        var getTransactionsRequest = _fixture.Create<GetTransactionsRequest>();
+        var transactionFixture = _fixture.Create<TransactionModel>();
+        var getTransactionsResponse = new GetTransactionsResponse() { Transactions = [transactionFixture] };
         var cancellationToken = new CancellationTokenSource().Token;
         _nagApiClientService
-            .Setup(x => x.GetTransactionsAsync(request, cancellationToken))
-            .ReturnsAsync(expectedResponse);
+            .Setup(x => x.GetTransactionsAsync(getTransactionsRequest, cancellationToken))
+            .ReturnsAsync(Result<GetTransactionsResponse>.Success(getTransactionsResponse));
 
         // Act
-        var result = await _accountsService.GetTransactionsAsync(request, cancellationToken);
+        var result = await _accountsService.GetTransactionsAsync(getTransactionsRequest, cancellationToken);
 
         // Assert
-        Assert.That(expectedResponse, Is.EqualTo(result));
-        _nagApiClientService.Verify(x => x.GetTransactionsAsync(request, cancellationToken), Times.Once);
+        Assert.That(result.IsSuccessful, Is.True);
+        Assert.That(getTransactionsResponse, Is.EqualTo(result.Value));
+        _nagApiClientService
+            .Verify(x => x.GetTransactionsAsync(getTransactionsRequest, cancellationToken)
+                , Times.Once);
     }
 }
