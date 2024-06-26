@@ -8,7 +8,7 @@ using PaymentsClient.Domain.Authentication;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 
-public class ExchangeTokenAsyncTestsBase : NagApiHttpClientServiceTestsBase
+public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
 {
     [Test]
     [AutoData]
