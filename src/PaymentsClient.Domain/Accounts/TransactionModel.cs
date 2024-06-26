@@ -29,11 +29,11 @@ public record TransactionModel
     [JsonPropertyName("category")]
     public string? Category { get; init; }
 
-    [JsonPropertyName("ammount")] 
-    public AmmountModel? TransactionAmmount { get; init; }
+    [JsonPropertyName("amount")] 
+    public AmountModel? TransactionAmount { get; init; }
     
     [JsonPropertyName("balance")] 
-    public AmmountModel? AccountBalance { get; init; }
+    public AmountModel? AccountBalance { get; init; }
     
     [JsonPropertyName("type")]
     public string? Type { get; init; }
