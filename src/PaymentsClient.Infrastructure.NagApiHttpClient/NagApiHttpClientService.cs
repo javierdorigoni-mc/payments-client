@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using PaymentsClient.Domain;
 using PaymentsClient.Domain.Accounts;
 using PaymentsClient.Domain.Authentication;
+using PaymentsClient.Domain.Payments;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient;
 
@@ -19,7 +20,9 @@ public class NagApiHttpClientService : INagApiClientService
         _logger = logger;
     }
     
-    public async Task<Result<InitializeAuthenticationResponse>> InitializeAuthenticationAsync(InitializeAuthenticationRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<InitializeAuthenticationResponse>> InitializeAuthenticationAsync(
+        InitializeAuthenticationRequest request, 
+        CancellationToken cancellationToken = default)
     {
         var httpRequestMessage = HttpRequestMessageBuilder
             .Create()
@@ -28,12 +31,12 @@ public class NagApiHttpClientService : INagApiClientService
             .WithJsonSerializedContent(request)
             .Build();
         
-        var response = await ExecuteHttpRequestAsync<InitializeAuthenticationResponse>(httpRequestMessage, cancellationToken);
-        
-        return response;
+        return await ExecuteHttpRequestAsync<InitializeAuthenticationResponse>(httpRequestMessage, cancellationToken);
     }
     
-    public async Task<Result<CompleteAuthenticationResponse>> ExchangeTokenAsync(CompleteAuthenticationRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<CompleteAuthenticationResponse>> ExchangeTokenAsync(
+        CompleteAuthenticationRequest request, 
+        CancellationToken cancellationToken = default)
     {
         var httpRequestMessage = HttpRequestMessageBuilder
             .Create()
@@ -42,12 +45,12 @@ public class NagApiHttpClientService : INagApiClientService
             .WithJsonSerializedContent(request)
             .Build();   
         
-        var response = await ExecuteHttpRequestAsync<CompleteAuthenticationResponse>(httpRequestMessage, cancellationToken);
-        
-        return response;
+        return await ExecuteHttpRequestAsync<CompleteAuthenticationResponse>(httpRequestMessage, cancellationToken);
     }
     
-    public async Task<Result<GetAccountsResponse>> GetAccountsAsync(GetAccountsRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<GetAccountsResponse>> GetAccountsAsync(
+        GetAccountsRequest request, 
+        CancellationToken cancellationToken = default)
     {        
         var httpRequestMessage = HttpRequestMessageBuilder
             .Create()
@@ -56,13 +59,13 @@ public class NagApiHttpClientService : INagApiClientService
             .WithAuthorizationBearerTokenHeader(request.AccessToken)
             .Build();
         
-        var response = await ExecuteHttpRequestAsync<GetAccountsResponse>(httpRequestMessage, cancellationToken);
-        
-        return response;
+        return await ExecuteHttpRequestAsync<GetAccountsResponse>(httpRequestMessage, cancellationToken);
     }
-    
-    public async Task<Result<GetTransactionsResponse>> GetTransactionsAsync(GetTransactionsRequest request, CancellationToken cancellationToken = default)
-    {        
+
+    public async Task<Result<GetTransactionsResponse>> GetTransactionsAsync(
+        GetTransactionsRequest request,
+        CancellationToken cancellationToken = default)
+    {
         var httpRequestMessage = HttpRequestMessageBuilder
             .Create()
             .WithHttpMethod(HttpMethod.Get)
@@ -71,12 +74,37 @@ public class NagApiHttpClientService : INagApiClientService
             .WithOptionalQueryStringParameter("withDetails", request.WithDetails?.ToString().ToLowerInvariant())
             .WithAuthorizationBearerTokenHeader(request.AccessToken)
             .Build();
-        
-        var response = await ExecuteHttpRequestAsync<GetTransactionsResponse>(httpRequestMessage, cancellationToken);
-        
-        return response;
+
+        return await ExecuteHttpRequestAsync<GetTransactionsResponse>(httpRequestMessage, cancellationToken);
     }
-    
+
+    public async Task<Result<CreatePaymentResponse>> CreatePaymentAsync(
+        CreatePaymentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var httpRequestMessage = HttpRequestMessageBuilder
+            .Create()
+            .WithHttpMethod(HttpMethod.Post)
+            .WithRequestUri("v1/payments/create")
+            .WithJsonSerializedContent(request)
+            .Build();
+
+        return await ExecuteHttpRequestAsync<CreatePaymentResponse>(httpRequestMessage, cancellationToken);
+    }
+
+    public async Task<Result<RefreshPaymentStatusResponse>> RefreshPaymentStatusAsync(
+        RefreshPaymentStatusRequest request, 
+        CancellationToken cancellationToken = default)
+    {
+        var httpRequestMessage = HttpRequestMessageBuilder
+            .Create()
+            .WithHttpMethod(HttpMethod.Post)
+            .WithRequestUri($"v1/payments/{request.PaymentId}/refresh-status")
+            .Build();
+
+        return await ExecuteHttpRequestAsync<RefreshPaymentStatusResponse>(httpRequestMessage, cancellationToken);
+    }
+
     private async Task<Result<TResponse>> ExecuteHttpRequestAsync<TResponse>(
         HttpRequestMessage requestMessage, 
         CancellationToken cancellationToken = default) where TResponse : class

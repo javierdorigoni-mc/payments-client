@@ -3,7 +3,7 @@ namespace PaymentsClient.Domain;
 public class Result<T> where T : class
 {
     public bool IsSuccessful { get; init; }
-    public bool HasFailure => Error != null && !IsSuccessful;
+    public bool HasFailed => Error != null && !IsSuccessful;
     public string? Error { get; init; }
     public T? Value { get; init; }
 

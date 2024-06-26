@@ -8,7 +8,7 @@ using PaymentsClient.Domain.Authentication;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 
-public class InitializeAuthenticationAsyncTestsBase : NagApiHttpClientServiceTestsBase
+public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTestsBase
 {
     [Test]
     [InlineAutoData("https://auth.example.com/auth/start", "some-session-id")]

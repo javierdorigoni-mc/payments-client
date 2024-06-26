@@ -1,6 +1,72 @@
 @PaymentsClient.WebApi_HostAddress = http://localhost:5031
 
+### PingController-Ping
 GET {{PaymentsClient.WebApi_HostAddress}}/api/ping/
 Accept: application/json
 
-###
+### AuthenticationController-InitializeAsync
+POST {{PaymentsClient.WebApi_HostAddress}}/api/authentication/initialize
+Content-Type: application/json
+
+{
+  "userHash": "test-user-id",
+  "redirectUrl": "http://localhost:5178/login-redirect"
+}
+
+### AuthenticationController-CompleteAsync
+POST {{PaymentsClient.WebApi_HostAddress}}/api/authentication/complete
+Content-Type: application/json
+
+{
+  "code": "6gAAAAVDaXBoZXJ0ZXh0ALAAAAAAycEc88sgO8K3c9Qn7-JlgRyXD0_6FRNZzAtW5FxdW_OXOgGZ5F5FoShL-VjB09P9Iz2SFuqo-tFLW1yDppr8R2n-OfiGEb645NWd6cNxBBrlcxxTCN_gIrE-dBcuOBm9oaunicim9iW8qyYKMWO2nMAZ2N64L9hmVbpEHjFwdJ339U_B0ZHRv671YDpGc8eKl6UdTUTCATBuUMDUuscAc4VzgxDY2Ogtw1Jh99hV4uAFSXYAEAAAAABJvdJ8yAbjOllP2yGObkmqEEtleUlkAAAAAAAA"
+}
+
+### AccountsController-GetAccountsAsync
+POST {{PaymentsClient.WebApi_HostAddress}}/api/accounts
+Content-Type: application/json
+
+{
+  "accessToken": "ygAAAAVDaXBoZXJ0ZXh0AJAAAAAA8MP0YKgkQ6nsIXXRLW1iHBApeHkmE1841z4Zy7ZBPeWM59PpLSJJRPjzlI_qrkl_RbyegJRJNpNn4vRCG6yw8_KIkiE3N_OiUfB5TcZlHN2mEkGKyC5y2HLYZ-Cu-RPt3_ezjqhf7LNxt2f-OX8Utj2ihgcMTq9CvoLSfszxKF7halS-H6vHTUDCTbjPBXPIBUl2ABAAAAAAL-BOoN497B4Hz0pKRoINuRBLZXlJZAAAAAAAAA"
+}
+
+### AccountsController-GetTransactionsAsync
+POST {{PaymentsClient.WebApi_HostAddress}}/api/accounts/transactions
+Content-Type: application/json
+
+{
+  "accessToken": "ygAAAAVDaXBoZXJ0ZXh0AJAAAAAA8MP0YKgkQ6nsIXXRLW1iHBApeHkmE1841z4Zy7ZBPeWM59PpLSJJRPjzlI_qrkl_RbyegJRJNpNn4vRCG6yw8_KIkiE3N_OiUfB5TcZlHN2mEkGKyC5y2HLYZ-Cu-RPt3_ezjqhf7LNxt2f-OX8Utj2ihgcMTq9CvoLSfszxKF7halS-H6vHTUDCTbjPBXPIBUl2ABAAAAAAL-BOoN497B4Hz0pKRoINuRBLZXlJZAAAAAAAAA",
+  "accountId": "0phfaQ3xJz5uIIhOZK2uaZkZneR0r_orWhaTW3UPI9M.3bf6e6a67319",
+  "fromDate": "2024-06-15",
+  "withDetails": true
+}
+
+### PaymentsController-CreatePaymentAsync
+POST {{PaymentsClient.WebApi_HostAddress}}/api/payments/create
+Content-Type: application/json
+
+{
+  "userHash": "test-user-id",
+  "request": {
+    "destination": {
+      "bban": {
+        "bankCode": "0001",
+        "accountNumber": "204386946"
+      },
+      "name": "Checking Account"
+    },
+    "amount": {
+      "value": "3.50",
+      "currency": "EUR"
+    }
+  },
+  "redirectUrl": "http://localhost:5178/payment-redirect",
+  "issuePayerToken": true
+}
+
+### PaymentsController-RefreshStatusAsync
+POST {{PaymentsClient.WebApi_HostAddress}}/api/payments/status
+Content-Type: application/json
+
+{
+  "paymentId": "20240626.asg6yzdd9bmwzx6njxq6odzpmo"
+}

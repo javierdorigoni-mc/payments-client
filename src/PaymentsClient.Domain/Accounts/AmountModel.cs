@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PaymentsClient.Domain.Accounts;
 
-public record AmmountModel
+public record AmountModel
 {        
     [JsonPropertyName("value")]
     public double? Value { get; init; }

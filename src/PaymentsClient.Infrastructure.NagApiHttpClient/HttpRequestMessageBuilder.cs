@@ -37,13 +37,13 @@ public class HttpRequestMessageBuilder
             return this;
         }
 
-        var sb = new StringBuilder(1000);
-        sb.Append(_requestUri);
-        sb.Append(_requestUri.Contains('?') ? '&' : '?');
-        sb.Append(queryStringName);
-        sb.Append('=');
-        sb.Append(queryStringValue);
-        _requestUri = sb.ToString();
+        var urlStringBuilder = new StringBuilder(2000);
+        urlStringBuilder.Append(_requestUri);
+        urlStringBuilder.Append(_requestUri.Contains('?') ? '&' : '?');
+        urlStringBuilder.Append(queryStringName);
+        urlStringBuilder.Append('=');
+        urlStringBuilder.Append(queryStringValue);
+        _requestUri = urlStringBuilder.ToString();
         
         return this;
     }
