@@ -1,22 +1,28 @@
 using System.Net;
 using System.Net.Http.Json;
 using AutoFixture;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using PaymentsClient.Domain.Authentication;
+using PaymentsClient.Domain.Payments;
 
 namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 
-public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
+public class RefreshPaymentStatusAsyncTests : NagApiHttpClientServiceTestsBase
 {
-    [Test]
-    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful()
+    [Test, AutoData]
+    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful(string paymentId)
     {
         // Arrange
-        var request = FixtureBuilder.Create<CompleteAuthenticationRequest>(); 
-        var response = FixtureBuilder.Create<CompleteAuthenticationResponse>();
-
+        var request = new RefreshPaymentStatusRequest(paymentId);
+        var paymentDetailsResponse = FixtureBuilder.Build<PaymentDetailsModel>()
+            .With(r => r.PaymentId, paymentId)
+            .Create();
+        var response = FixtureBuilder.Build<RefreshPaymentStatusResponse>()
+            .With(r => r.PaymentDetails, paymentDetailsResponse)
+            .Create();
+        
         HttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -30,14 +36,13 @@ public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
             });
 
         // Act
-        var result = await NagApiHttpClientService.ExchangeTokenAsync(request);
+        var result = await NagApiHttpClientService.RefreshPaymentStatusAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.Login, Is.Not.Null);
-        Assert.That(result.Value.Session, Is.Not.Null);
-        Assert.That(result.Value.ProviderId, Is.Not.Null);
+        Assert.That(result.Value.PaymentDetails, Is.Not.Null);
+        Assert.That(result.Value.PaymentDetails.PaymentId, Is.EqualTo(paymentId));
         HttpMessageHandler
             .Protected()
             .Verify(
@@ -45,10 +50,9 @@ public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
                 Times.Once(),
                 ItExpr.Is<HttpRequestMessage>(req =>
                     req.Method == HttpMethod.Post &&
-                    req.RequestUri == new Uri("https://api.test.com/v1/authentication/tokens") &&
+                    req.RequestUri == new Uri($"https://api.test.com/v1/payments/{paymentId}/refresh-status") &&
                     req.Headers.Contains("X-Client-Id") &&
-                    req.Headers.Contains("X-Client-Secret") && 
-                    req.Content != null),
+                    req.Headers.Contains("X-Client-Secret")),
                 ItExpr.IsAny<CancellationToken>());
     }
     
@@ -56,7 +60,7 @@ public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
     public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors()
     {
         // Arrange
-        var request = FixtureBuilder.Create<CompleteAuthenticationRequest>(); 
+        var request = FixtureBuilder.Create<RefreshPaymentStatusRequest>();
         
         HttpMessageHandler
             .Protected()
@@ -67,7 +71,7 @@ public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
             .ThrowsAsync(new HttpRequestException("Request failed"));
 
         // Act
-        var result = await NagApiHttpClientService.ExchangeTokenAsync(request);
+        var result = await NagApiHttpClientService.RefreshPaymentStatusAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
