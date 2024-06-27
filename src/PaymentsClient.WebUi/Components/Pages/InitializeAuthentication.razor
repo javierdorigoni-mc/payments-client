@@ -14,7 +14,7 @@
 <button class="btn btn-primary" @onclick="InitializeAuthenticationAsync">Initialize Authentication</button>
 
 @code {
-    private string? _userHash = string.Empty;
+    private string? _userHash;
 
     private async Task InitializeAuthenticationAsync()
     {
@@ -35,5 +35,4 @@
 
         _navigationManager.NavigateTo(result.Value!.AuthUrl);
     }
-    
 }

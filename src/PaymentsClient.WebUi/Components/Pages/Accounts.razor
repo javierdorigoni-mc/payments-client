@@ -1,0 +1,75 @@
+﻿@page "/accounts"
+@using System.Collections.Immutable
+@using PaymentsClient.Domain.Accounts
+@inject IAccountsService _accountsService;
+@rendermode InteractiveServer
+
+<PageTitle>Accounts</PageTitle>
+
+<h1>List of Accounts</h1>
+
+<label class="form-label" for="accessToken">Access Token: </label>
+<input class="form-text" type="text" @bind="_accessToken" id="accessToken" />
+
+<button class="btn btn-primary" @onclick="GetAccountsAsync">Fetch Data</button>
+
+@if (_accounts == null || _accounts?.Length == 0)
+{
+    <p>
+        <em>Please provide an access token and click on Fetch Data</em>
+    </p>
+}
+@if (_accounts != null && _accounts?.Length > 0 && !_loading)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>ProviderId</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var account in _accounts!)
+        {
+            <tr>
+                <td>@account.Id</td>
+                <td>@account.Name</td>
+                <td>@account.ProviderId</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@if (_loading)
+{
+    <p>
+        <em>Loading Data...</em>
+    </p>
+}
+
+@code {
+    private ImmutableArray<AccountModel>? _accounts;
+    private string? _accessToken;
+    private bool _loading = false;
+
+    private async Task GetAccountsAsync()
+    {
+        _loading = true;
+        if (string.IsNullOrWhiteSpace(_accessToken))
+        {
+            return;
+        }
+
+        var getAccountResponse = await _accountsService.GetAccountsAsync(new GetAccountsRequest(_accessToken));
+        
+        if (getAccountResponse.IsSuccessful is false)
+        {
+            return;
+        }
+        
+        _accounts = getAccountResponse.Value!.Accounts;
+        _loading = false;
+    }
+}

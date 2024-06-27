@@ -9,7 +9,7 @@
 
 <h1>Authentication</h1>
 
-@if (_error is not null)
+@if (string.IsNullOrEmpty(_error) is false)
 {
     <p role="alert">Error: <strong style="color: red">@_error</strong></p>
 }
@@ -43,20 +43,22 @@
     private string? _error;
     private CompleteAuthenticationResponse? _authenticationResponse;
     
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         // Capture the query string parameters
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
         var queryStrings = QueryHelpers.ParseQuery(uri.Query);
 
-        if (queryStrings.TryGetValue("code", out var authCode))
-        {
-            _authCode = authCode.ToString();
-        }
-        else
-        {
+        if (queryStrings.TryGetValue("code", out var authCode) is false)
+        {            
             _error = "Auth Code was not received properly from authentication callback";
+            return;
         }
+        
+        _authCode = authCode.ToString();
+        _error = string.Empty;
+        
+        await CompleteAuthenticationAsync();
     }
     
     private async Task CompleteAuthenticationAsync()
