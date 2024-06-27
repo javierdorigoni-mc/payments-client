@@ -1,0 +1,100 @@
+﻿@page "/transactions/{AccountId}"
+@using System.Collections.Immutable
+@using PaymentsClient.Domain.Accounts
+@inject NavigationManager _navigationManager
+@inject IAccountsService _accountsService
+@rendermode InteractiveServer
+
+<PageTitle>Transactions</PageTitle>
+
+<h1>List of Transactions</h1>
+<h3>Account: @AccountId</h3>
+
+<label class="form-label" for="accessToken">Access Token: </label>
+<input class="form-text" type="text" @bind="_accessToken" id="accessToken" />
+<br />
+<label class="form-label" for="withDetails">With Details: </label>
+<input class="form-check" type="checkbox" @bind="_withDetails" id="withDetails" />
+<br />
+<label class="form-label" for="fromDate">From Date: </label>
+<input class="form-control" type="date" @bind="_fromDate" id="fromDate" />
+<br />
+<button class="btn btn-primary" @onclick="GetTransactionsAsync">Fetch Data</button>
+<br />
+
+@if (_transactions == null || _transactions?.Length == 0)
+{
+    <p>
+        <em>Please provide an access token and click on Fetch Data</em>
+    </p>
+}
+@if (_transactions != null && _transactions?.Length > 0 && !_loading)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Category</th>
+            <th>State</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var transaction in _transactions!)
+        {
+            <tr>
+                <td>@transaction.Id</td>
+                <td>@transaction.Category</td>
+                <td>@transaction.State</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@if (_loading)
+{
+    <p>
+        <em>Loading Data...</em>
+    </p>
+}
+
+<br />
+<button class="btn btn-primary" @onclick="RedirectToAccounts">Go Back to Accounts</button>
+
+@code {    
+    [Parameter]
+    public string AccountId { get; set; } = string.Empty;
+    
+    private ImmutableArray<TransactionModel>? _transactions;
+    private bool _loading;
+    private string? _accessToken;
+    private DateTimeOffset? _fromDate;
+    private bool _withDetails;
+
+    private async Task GetTransactionsAsync()
+    {
+        _loading = true;
+        if (string.IsNullOrWhiteSpace(_accessToken) || string.IsNullOrWhiteSpace(AccountId))
+        {
+            return;
+        } 
+        var fromDateString = _fromDate == null ? "2021-01-01" : $"{_fromDate.Value.Year}-{_fromDate.Value.Month}-{_fromDate.Value.Day}";
+        
+        var getTransactionsRequest = new GetTransactionsRequest(_accessToken, AccountId, fromDateString, _withDetails);
+        
+        var getTransactionsResponse = await _accountsService.GetTransactionsAsync(getTransactionsRequest);
+        
+        if (getTransactionsResponse.IsSuccessful is false)
+        {
+            return;
+        }
+        
+        _transactions = getTransactionsResponse.Value!.Transactions;
+        _loading = false;
+    }
+
+    private void RedirectToAccounts()
+    {   
+        _navigationManager.NavigateTo($"/accounts");
+    }
+}

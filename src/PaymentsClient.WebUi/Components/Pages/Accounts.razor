@@ -1,7 +1,8 @@
 ﻿@page "/accounts"
 @using System.Collections.Immutable
 @using PaymentsClient.Domain.Accounts
-@inject IAccountsService _accountsService;
+@inject NavigationManager _navigationManager
+@inject IAccountsService _accountsService
 @rendermode InteractiveServer
 
 <PageTitle>Accounts</PageTitle>
@@ -27,6 +28,7 @@
             <th>Id</th>
             <th>Name</th>
             <th>ProviderId</th>
+            <th>Transactions</th>
         </tr>
         </thead>
         <tbody>
@@ -36,6 +38,7 @@
                 <td>@account.Id</td>
                 <td>@account.Name</td>
                 <td>@account.ProviderId</td>
+                <td><button class="btn btn-info" @onclick="() => RedirectToTransactions(account.Id)">View Transactions</button></td>
             </tr>
         }
         </tbody>
@@ -52,7 +55,7 @@
 @code {
     private ImmutableArray<AccountModel>? _accounts;
     private string? _accessToken;
-    private bool _loading = false;
+    private bool _loading;
 
     private async Task GetAccountsAsync()
     {
@@ -62,14 +65,19 @@
             return;
         }
 
-        var getAccountResponse = await _accountsService.GetAccountsAsync(new GetAccountsRequest(_accessToken));
+        var getAccountsResponse = await _accountsService.GetAccountsAsync(new GetAccountsRequest(_accessToken));
         
-        if (getAccountResponse.IsSuccessful is false)
+        if (getAccountsResponse.IsSuccessful is false)
         {
             return;
         }
         
-        _accounts = getAccountResponse.Value!.Accounts;
+        _accounts = getAccountsResponse.Value!.Accounts;
         _loading = false;
+    }
+
+    private void RedirectToTransactions(string? accountId)
+    {   
+        _navigationManager.NavigateTo($"/transactions/{accountId}");
     }
 }

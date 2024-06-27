@@ -45,7 +45,6 @@
     
     protected override async Task OnInitializedAsync()
     {
-        // Capture the query string parameters
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
         var queryStrings = QueryHelpers.ParseQuery(uri.Query);
 
@@ -57,8 +56,6 @@
         
         _authCode = authCode.ToString();
         _error = string.Empty;
-        
-        await CompleteAuthenticationAsync();
     }
     
     private async Task CompleteAuthenticationAsync()

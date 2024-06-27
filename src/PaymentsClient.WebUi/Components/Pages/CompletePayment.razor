@@ -1,0 +1,30 @@
+﻿@page "/complete-payment"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager _navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Complete/Refresh Payment</PageTitle>
+
+<h1>Payment</h1>
+
+@if (string.IsNullOrEmpty(_error) is false)
+{
+    <p role="alert">Error: <strong style="color: red">@_error</strong></p>
+}
+
+@code {
+    private string? _error;
+    
+    protected void OnInitialized()
+    {
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        var queryStrings = QueryHelpers.ParseQuery(uri.Query);
+
+        if (queryStrings.TryGetValue("code", out var authCode) is false)
+        {            
+            _error = "Auth Code was not received properly from authentication callback";
+            return;
+        }
+        _error = string.Empty;
+    }
+}
