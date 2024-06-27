@@ -1,0 +1,78 @@
+﻿@page "/complete-authentication"
+@using PaymentsClient.Domain.Authentication
+@using Microsoft.AspNetCore.WebUtilities
+@inject IAuthenticationService _authenticationService
+@inject NavigationManager _navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Complete Authentication</PageTitle>
+
+<h1>Authentication</h1>
+
+@if (_error is not null)
+{
+    <p role="alert">Error: <strong style="color: red">@_error</strong></p>
+}
+
+@if (_authCode is not null)
+{
+    <p role="document">Auth Code: <strong>@_authCode</strong></p>
+}
+
+@if (_authenticationResponse is null)
+{
+    <button class="btn btn-primary" @onclick="CompleteAuthenticationAsync">Complete Authentication</button>
+}
+@if (_authenticationResponse is not null)
+{
+    <h3>Session</h3>
+    <p role="document">Access Token: <strong>@_authenticationResponse.Session?.AccessToken</strong></p>
+    <p role="document">Token Expires: <strong>@_authenticationResponse.Session?.Expires.ToString()</strong></p>
+    
+    <h3>Login</h3>
+    <p role="document">Provider Id: <strong>@_authenticationResponse.Login?.ProviderId ?? @_authenticationResponse.ProviderId</strong></p>
+    <p role="document">Token Expires: <strong>@_authenticationResponse.Login?.Expires.ToString()</strong></p>
+    <p role="document">Login Token: <strong>@_authenticationResponse.Login?.LoginToken</strong></p>
+    <p role="document">Supports unattended: <strong>@_authenticationResponse.Login?.SupportsUnattended.ToString()</strong></p>
+    <p role="document">Label: <strong>@_authenticationResponse.Login?.Label</strong></p>
+    <p role="document">Subject Id: <strong>@_authenticationResponse.Login?.SubjectId</strong></p>
+}
+
+@code {
+    private string? _authCode;
+    private string? _error;
+    private CompleteAuthenticationResponse? _authenticationResponse;
+    
+    protected override void OnInitialized()
+    {
+        // Capture the query string parameters
+        var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
+        var queryStrings = QueryHelpers.ParseQuery(uri.Query);
+
+        if (queryStrings.TryGetValue("code", out var authCode))
+        {
+            _authCode = authCode.ToString();
+        }
+        else
+        {
+            _error = "Auth Code was not received properly from authentication callback";
+        }
+    }
+    
+    private async Task CompleteAuthenticationAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_authCode))
+        {
+            _error = "Auth Code was not received properly from authentication callback";
+        }
+
+        var result = await _authenticationService.CompleteAuthenticationAsync(new CompleteAuthenticationRequest(_authCode));
+
+        if (result.IsSuccessful is false)
+        {
+            _error = "Unable to complete authentication with the given Auth Code, please check the logs";
+        }
+    
+        _authenticationResponse = result.Value;
+    }
+}
