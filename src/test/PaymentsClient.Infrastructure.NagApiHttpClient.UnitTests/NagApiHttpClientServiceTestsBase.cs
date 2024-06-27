@@ -1,3 +1,4 @@
+using AutoFixture;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -9,21 +10,24 @@ namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 public abstract class NagApiHttpClientServiceTestsBase
 {
     protected readonly Mock<HttpMessageHandler> HttpMessageHandler;
-    protected HttpClient HttpClient;
+    private readonly HttpClient _httpClient;
     protected Mock<ILogger<NagApiHttpClientService>> Logger;
     protected NagApiHttpClientService NagApiHttpClientService;
-
+    protected Fixture FixtureBuilder;
     public NagApiHttpClientServiceTestsBase()
     {
         HttpMessageHandler = new Mock<HttpMessageHandler>();
-        HttpClient = new HttpClient(HttpMessageHandler.Object)
+        _httpClient = new HttpClient(HttpMessageHandler.Object)
         {
             BaseAddress = new Uri("https://api.test.com")
         };
-        HttpClient.DefaultRequestHeaders.Add("X-Client-Id", "some-client-id");
-        HttpClient.DefaultRequestHeaders.Add("X-Client-Secret", "some-client-secret");
+        _httpClient.DefaultRequestHeaders.Add("X-Client-Id", "some-client-id");
+        _httpClient.DefaultRequestHeaders.Add("X-Client-Secret", "some-client-secret");
         
         Logger = new Mock<ILogger<NagApiHttpClientService>>();
-        NagApiHttpClientService = new NagApiHttpClientService(HttpClient, Logger.Object);
+        
+        NagApiHttpClientService = new NagApiHttpClientService(_httpClient, Logger.Object);
+        
+        FixtureBuilder = new Fixture();
     }
 }

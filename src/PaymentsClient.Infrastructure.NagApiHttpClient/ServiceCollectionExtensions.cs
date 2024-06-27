@@ -15,11 +15,11 @@ public static class ServiceCollectionExtensions
                 client =>
                 {
                     client.BaseAddress = new Uri(configuration.GetValue<string>("NagApi:BaseUri") 
-                                                 ?? throw new ArgumentException("Null NagApi Http Client Base Uri configuration"));
+                                                 ?? throw new ArgumentException("Missing NagApi Http Client Base Uri configuration"));
                     client.DefaultRequestHeaders.Add("X-Client-Id", configuration.GetValue<string>("NagApi:ClientId")
-                                                                    ?? throw new ArgumentException("Null NagApi ClientId Configuration"));
+                                                                    ?? throw new ArgumentException("Missing NagApi ClientId Configuration"));
                     client.DefaultRequestHeaders.Add("X-Client-Secret", configuration.GetValue<string>("NagApi:ClientSecret")
-                                                                    ?? throw new ArgumentException("Null NagApi ClientSecret Configuration"));
+                                                                    ?? throw new ArgumentException("Missing NagApi ClientSecret Configuration"));
                     client.Timeout = TimeSpan.FromSeconds(3);
                 })
             .AddPolicyHandler(GetRetryPolicy());

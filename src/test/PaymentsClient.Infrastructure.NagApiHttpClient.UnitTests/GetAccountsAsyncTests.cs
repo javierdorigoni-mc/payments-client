@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Json;
-using AutoFixture.NUnit3;
+using AutoFixture;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -12,15 +12,16 @@ namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
 public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
 {
     [Test]
-    [AutoData]
-    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful(
-        string accessToken,
-        string? pagingToken,
-        string accountId)
+    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful()
     {
         // Arrange
-        var request = new GetAccountsRequest(accessToken);
-        
+        var request = FixtureBuilder.Create<GetAccountsRequest>();
+        var singleAccountResponse = FixtureBuilder.Create<AccountModel>();
+        var response = FixtureBuilder
+            .Build<GetAccountsResponse>()
+            .With(r => r.Accounts, [singleAccountResponse])
+            .Create();
+
         HttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -30,11 +31,7 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = JsonContent.Create(new GetAccountsResponse()
-                {
-                    Accounts = ImmutableArray<AccountModel>.Empty,
-                    PagingToken = pagingToken
-                })
+                Content = JsonContent.Create(response)
             });
 
         // Act
@@ -43,8 +40,7 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.Accounts, Is.Empty);
-        Assert.That(string.Equals(result.Value.PagingToken, pagingToken), Is.True);
+        Assert.That(result.Value.Accounts, Is.Not.Empty);
         HttpMessageHandler
             .Protected()
             .Verify(
@@ -59,11 +55,11 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
                 ItExpr.IsAny<CancellationToken>());
     }
     
-    [Test, AutoData]
-    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors(string accessToken)
+    [Test]
+    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors()
     {
         // Arrange
-        var request = new GetAccountsRequest(accessToken);
+        var request = FixtureBuilder.Create<GetAccountsRequest>();        
         
         HttpMessageHandler
             .Protected()
