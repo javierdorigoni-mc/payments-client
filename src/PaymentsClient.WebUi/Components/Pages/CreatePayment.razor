@@ -1,0 +1,73 @@
+﻿@page "/create-payment"
+@using PaymentsClient.Domain.Accounts
+@using PaymentsClient.Domain.Payments
+@inject NavigationManager _navigationManager
+@inject IPaymentsService _paymentsService
+@rendermode InteractiveServer
+
+<PageTitle>Create Payment</PageTitle>
+
+<h1>Authentication</h1>
+
+<label class="form-label" for="userHash">UserHash: </label>
+<input class="form-text" type="text" @bind="_userHash" id="userHash" />
+
+<label class="form-label" for="destinationBankCode">Destination Bban BankCode: </label>
+<input class="form-text" type="text" @bind="_destinationBankCode" id="destinationBankCode" />
+
+<label class="form-label" for="destinationAccountNumber">Destination Bban Account Number: </label>
+<input class="form-text" type="text" @bind="_destinationAccountNumber" id="destinationAccountNumber" />
+
+<label class="form-label" for="destinationAccountName">Destination Account Name: </label>
+<input class="form-text" type="text" @bind="_destinationAccountName" id="destinationAccountName" />
+
+<label class="form-label" for="amountValue">Amount Value: </label>
+<input class="form-text" type="text" @bind="_amountValue" id="amountValue" />
+
+<label class="form-label" for="amountCurrency">Amount Currency: </label>
+<input class="form-text" type="text" @bind="_amountCurrency" id="amountCurrency" />
+
+<button class="btn btn-primary" @onclick="CreatePaymentAsync">Create Payment</button>
+
+@code {
+    private string? _userHash;
+    private string? _destinationBankCode;
+    private string? _destinationAccountNumber;
+    private string? _destinationAccountName;
+    private string? _amountValue;
+    private string? _amountCurrency;
+
+    private async Task CreatePaymentAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_userHash) 
+            || string.IsNullOrWhiteSpace(_destinationBankCode)
+            || string.IsNullOrWhiteSpace(_destinationAccountNumber)
+            || string.IsNullOrWhiteSpace(_destinationAccountName)
+            || string.IsNullOrWhiteSpace(_amountValue)
+            || string.IsNullOrWhiteSpace(_amountCurrency))
+        {
+            return;
+        }
+
+        var redirectUrl = new UriBuilder(_navigationManager.BaseUri) { Path = "complete-payment" }.Uri.AbsoluteUri;
+        var paymentRequest = new CreatePaymentRequest(
+            _userHash,
+            new CreatePaymentRequestDetails(
+                new PaymentDestination(
+                    new AccountBbanDetails() { AccountNumber = _destinationAccountNumber, BankCode = _destinationBankCode },
+                    null, null, null, _destinationAccountName, null),
+                new AmountModel() { Value = double.Parse(_amountValue), Currency = _amountCurrency }),
+            redirectUrl,
+            true,
+            null);
+
+        var result = await _paymentsService.CreatePaymentAsync(paymentRequest);
+
+        if (result.IsSuccessful is false)
+        {
+            return;
+        }
+
+        _navigationManager.NavigateTo(result.Value?.RedirectUrl ?? throw new ArgumentNullException("RedirectUrl"));
+    }
+}
