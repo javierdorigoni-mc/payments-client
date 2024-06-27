@@ -56,7 +56,7 @@ public class PaymentsServiceTests
 
         // Assert
         Assert.That(result.Error, Is.EqualTo(expectedResponse.Error));
-        Assert.That(result.HasFailed);
+        Assert.That(result.IsSuccessful, Is.False);
         _nagApiClientService
             .Verify(x => x.CreatePaymentAsync(It.IsAny<CreatePaymentRequest>(), It.IsAny<CancellationToken>())
                 , Times.Never);
@@ -84,7 +84,7 @@ public class PaymentsServiceTests
 
         // Assert
         Assert.That(result.Error, Is.EqualTo(expectedResponse.Error));
-        Assert.That(result.HasFailed);
+        Assert.That(result.IsSuccessful, Is.False);
         _nagApiClientService
             .Verify(x => x.CreatePaymentAsync(It.IsAny<CreatePaymentRequest>(), It.IsAny<CancellationToken>())
                 , Times.Never);    }
@@ -123,7 +123,7 @@ public class PaymentsServiceTests
 
         // Assert
         Assert.That(result.Error, Is.EqualTo(expectedResponse.Error));
-        Assert.That(result.HasFailed);
+        Assert.That(result.IsSuccessful, Is.False);
         _nagApiClientService
             .Verify(x => x.RefreshPaymentStatusAsync(It.IsAny<RefreshPaymentStatusRequest>(), It.IsAny<CancellationToken>())
                 , Times.Never);

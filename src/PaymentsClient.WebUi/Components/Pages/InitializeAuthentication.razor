@@ -1,0 +1,39 @@
+﻿@page "/initialize-authentication"
+@using PaymentsClient.Domain.Authentication
+@inject NavigationManager _navigationManager
+@inject IAuthenticationService _authenticationService
+@rendermode InteractiveServer
+
+<PageTitle>Initialize Authentication</PageTitle>
+
+<h1>Authentication</h1>
+
+<label class="form-label" for="userHash">UserHash: </label>
+<input class="form-text" type="text" @bind="_userHash" id="userHash" />
+
+<button class="btn btn-primary" @onclick="InitializeAuthenticationAsync">Initialize Authentication</button>
+
+@code {
+    private string? _userHash = string.Empty;
+
+    private async Task InitializeAuthenticationAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_userHash))
+        {
+            return;
+        }
+
+        var redirectUrl = new UriBuilder(_navigationManager.BaseUri) { Path = "complete-authentication" }.Uri.AbsoluteUri;
+        var request = new InitializeAuthenticationRequest(_userHash, redirectUrl);
+        
+        var result = await _authenticationService.InitializeAuthenticationAsync(request);
+
+        if (result.IsSuccessful is false)
+        {
+            return;
+        }
+
+        _navigationManager.NavigateTo(result.Value!.AuthUrl);
+    }
+    
+}
