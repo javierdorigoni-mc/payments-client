@@ -1,30 +1,62 @@
 ﻿@page "/complete-payment"
 @using Microsoft.AspNetCore.WebUtilities
+@using PaymentsClient.Domain.Payments
+@inject IPaymentsService _paymentsService
 @inject NavigationManager _navigationManager
 @rendermode InteractiveServer
 
-<PageTitle>Complete/Refresh Payment</PageTitle>
+<PageTitle>Payment Status</PageTitle>
 
-<h1>Payment</h1>
+<h1>Payment status</h1>
 
 @if (string.IsNullOrEmpty(_error) is false)
 {
     <p role="alert">Error: <strong style="color: red">@_error</strong></p>
 }
 
+@if (_paymentId is not null)
+{
+    <p role="document">Payment Id: <strong>@_paymentId</strong></p>
+    <button class="btn btn-primary" @onclick="RefreshPaymentStatusAsync">Refresh status</button>
+}
+
+@if (_refreshPaymentStatusResponse is not null)
+{
+    <h3>Session</h3>
+    <p role="document">Payment Details: <strong>@_refreshPaymentStatusResponse.PaymentDetails</strong></p>
+}
+
 @code {
+    private string? _paymentId;
     private string? _error;
+    private RefreshPaymentStatusResponse? _refreshPaymentStatusResponse;
     
-    protected void OnInitialized()
+    protected override void OnInitialized()
     {
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
         var queryStrings = QueryHelpers.ParseQuery(uri.Query);
 
-        if (queryStrings.TryGetValue("code", out var authCode) is false)
+        if (queryStrings.TryGetValue("paymentId", out var paymentId) is false)
         {            
-            _error = "Auth Code was not received properly from authentication callback";
-            return;
+            _error = "Payment Creation callback failed. Please retry later";
         }
-        _error = string.Empty;
+        _paymentId = paymentId;
+    }
+    
+    private async Task RefreshPaymentStatusAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_paymentId))
+        {
+            _error = "Payment Id was not received properly from payment callback";
+        }
+        
+        var result = await _paymentsService.RefreshStatusAsync(new RefreshPaymentStatusRequest(_paymentId!));
+        
+        if (result.IsSuccessful is false)
+        {
+            _error = $"Unable to refresh payment status for payment id: {_paymentId}";
+        }
+        
+        _refreshPaymentStatusResponse = result.Value;
     }
 }
