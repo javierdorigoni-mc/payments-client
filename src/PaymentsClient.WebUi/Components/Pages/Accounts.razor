@@ -25,10 +25,17 @@
     <table class="table">
         <thead>
         <tr>
-            <th>Id</th>
+            <th>Account Id</th>
             <th>Name</th>
-            <th>ProviderId</th>
-            <th>Transactions</th>
+            <th>Provider Id</th>
+            <th>Bban</th>
+            <th>Bban Details</th>
+            <th>Iban</th>
+            <th>Card</th>
+            <th>Booked Balance</th>
+            <th>Available Balance</th>
+            <th>Type</th>      
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -38,6 +45,29 @@
                 <td>@account.Id</td>
                 <td>@account.Name</td>
                 <td>@account.ProviderId</td>
+                <td>
+                    Type: @account.AccountNumberDetails?.BbanType &nbsp;
+                    Number: @account.AccountNumberDetails?.Bban
+                </td>
+                <td>
+                    Bank Code: @account.AccountNumberDetails?.BbanDetails?.BankCode &nbsp;
+                    Bank Number: @account.AccountNumberDetails?.BbanDetails?.AccountNumber
+                </td>
+                <td>@account.AccountNumberDetails?.Iban</td>
+                @if (!string.IsNullOrEmpty(account.AccountNumberDetails?.Card?.MaskedPanNumber))
+                {
+                    <td>
+                        PanNumber: @(account.AccountNumberDetails?.Card?.MaskedPanNumber ?? string.Empty) &nbsp;
+                        Expiry: @account.AccountNumberDetails?.Card?.ExpireMonth / @account.AccountNumberDetails?.Card?.ExpireYear
+                    </td>
+                }
+                else
+                {
+                    <td>No Card Info</td>
+                }
+                <td>@account.BookedBalance?.Currency &nbsp; @account.BookedBalance?.Value.ToString()</td>
+                <td>@account.AvailableBalance?.Currency &nbsp; @account.AvailableBalance?.Value.ToString()</td>
+                <td>@account.Type</td>
                 <td><button class="btn btn-info" @onclick="() => RedirectToTransactions(account.Id)">View Transactions</button></td>
             </tr>
         }
@@ -66,18 +96,18 @@
         }
 
         var getAccountsResponse = await _accountsService.GetAccountsAsync(new GetAccountsRequest(_accessToken));
-        
+
         if (getAccountsResponse.IsSuccessful is false)
         {
             return;
         }
-        
+
         _accounts = getAccountsResponse.Value!.Accounts;
         _loading = false;
     }
 
     private void RedirectToTransactions(string? accountId)
-    {   
+    {
         _navigationManager.NavigateTo($"/transactions/{accountId}");
     }
 }

@@ -43,7 +43,7 @@
     private string? _error;
     private CompleteAuthenticationResponse? _authenticationResponse;
     
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         var uri = _navigationManager.ToAbsoluteUri(_navigationManager.Uri);
         var queryStrings = QueryHelpers.ParseQuery(uri.Query);

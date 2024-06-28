@@ -19,5 +19,5 @@ public record PaymentDetailsStatusModel
     public DateTimeOffset? LastUpdated { get; init; }
     
     [JsonPropertyName("details")]    
-    public string? Details { get; init; }
+    public PaymentsStatusDetailsModel? Details { get; init; }
 }
