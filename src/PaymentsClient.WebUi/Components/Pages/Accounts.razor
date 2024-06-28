@@ -50,14 +50,21 @@
                     Number: @account.AccountNumberDetails?.Bban
                 </td>
                 <td>
-                    Bank Code: @account.AccountNumberDetails?.BbanDetails?.BankCode &nbsp; 
+                    Bank Code: @account.AccountNumberDetails?.BbanDetails?.BankCode &nbsp;
                     Bank Number: @account.AccountNumberDetails?.BbanDetails?.AccountNumber
                 </td>
                 <td>@account.AccountNumberDetails?.Iban</td>
-                <td>
-                    PanNumber: @(account.AccountNumberDetails?.Card?.MaskedPanNumber ?? string.Empty) &nbsp; 
-                    Expiry: @account.AccountNumberDetails?.Card?.ExpireMonth / @account.AccountNumberDetails?.Card?.ExpireYear
-                </td>
+                @if (!string.IsNullOrEmpty(account.AccountNumberDetails?.Card?.MaskedPanNumber))
+                {
+                    <td>
+                        PanNumber: @(account.AccountNumberDetails?.Card?.MaskedPanNumber ?? string.Empty) &nbsp;
+                        Expiry: @account.AccountNumberDetails?.Card?.ExpireMonth / @account.AccountNumberDetails?.Card?.ExpireYear
+                    </td>
+                }
+                else
+                {
+                    <td>No Card Info</td>
+                }
                 <td>@account.BookedBalance?.Currency &nbsp; @account.BookedBalance?.Value.ToString()</td>
                 <td>@account.AvailableBalance?.Currency &nbsp; @account.AvailableBalance?.Value.ToString()</td>
                 <td>@account.Type</td>
@@ -89,18 +96,18 @@
         }
 
         var getAccountsResponse = await _accountsService.GetAccountsAsync(new GetAccountsRequest(_accessToken));
-        
+
         if (getAccountsResponse.IsSuccessful is false)
         {
             return;
         }
-        
+
         _accounts = getAccountsResponse.Value!.Accounts;
         _loading = false;
     }
 
     private void RedirectToTransactions(string? accountId)
-    {   
+    {
         _navigationManager.NavigateTo($"/transactions/{accountId}");
     }
 }

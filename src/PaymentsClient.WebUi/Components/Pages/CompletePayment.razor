@@ -1,4 +1,5 @@
 ﻿@page "/complete-payment"
+@using System.Text
 @using Microsoft.AspNetCore.WebUtilities
 @using PaymentsClient.Domain.Payments
 @inject IPaymentsService _paymentsService
@@ -22,8 +23,139 @@
 
 @if (_refreshPaymentStatusResponse is not null)
 {
-    <h3>Session</h3>
-    <p role="document">Payment Details: <strong>@_refreshPaymentStatusResponse.PaymentDetails</strong></p>
+    <h2>Payment Details</h2>
+    
+    <p role="document">Payment Id: <strong>@_refreshPaymentStatusResponse.PaymentDetails.PaymentId</strong></p>
+    <p role="document">User Hash: <strong>@_refreshPaymentStatusResponse.PaymentDetails.UserHash</strong></p>
+    <p role="document">Provider Id: <strong>@_refreshPaymentStatusResponse.PaymentDetails.ProviderId</strong></p>
+    <p role="document">Provider Payment Id: <strong>@_refreshPaymentStatusResponse.PaymentDetails.ProviderPaymentId</strong></p>
+    <p role="document">State: <strong>@_refreshPaymentStatusResponse.PaymentDetails.State</strong></p>
+    <p role="document">Created DateTime: <strong>@ToShortDateTime(_refreshPaymentStatusResponse.PaymentDetails.Created)</strong></p> 
+    <p role="document">Message: <strong>@_refreshPaymentStatusResponse.PaymentDetails.Message</strong></p>
+    <p role="document">Transaction Text: <strong>@_refreshPaymentStatusResponse.PaymentDetails.TransactionText</strong></p>
+
+    <h4>Request:</h4> 
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Source Account Id</th>
+            <th>Currency</th>
+            <th>Execution</th>
+            <th>Message</th>
+            <th>Transaction Text</th>
+            <th>End To End Id</th>
+            <th>Reference</th>
+            <th>Payment Method</th>
+            <th>Destination</th>
+            <th>Identifiers</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.SourceAccountId</td>
+            <td>
+                @_refreshPaymentStatusResponse.PaymentDetails.Request?.Amount.Currency &nbsp;
+                @_refreshPaymentStatusResponse.PaymentDetails.Request?.Amount.Value
+            </td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.Execution</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.Message</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.TransactionText</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.EndToEndId</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.Reference</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.PaymentMethod</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.Destination</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Request?.Identifiers</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h4>Status:</h4>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Terminal</th>
+            <th>Code</th>
+            <th>CodeV2</th>
+            <th>Last Updated</th>
+            <th>Provider Status Code</th>
+            <th>Reason</th>
+            <th>Provider Message</th>
+            <th>Error</th>
+            <th>Last Known Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.Terminal</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.Code</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.CodeV2</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.LastUpdated </td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.Details?.ProviderStatusCode</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.Details?.Reason</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.Details?.ProviderMessage</td>
+            <td>
+                Type: @_refreshPaymentStatusResponse.PaymentDetails.Status?.Details?.ErrorType -
+                Code: @_refreshPaymentStatusResponse.PaymentDetails.Status?.Details?.ErrorCode
+            </td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Status?.Details?.LastKnownStatus</td>
+        </tr>
+        </tbody>
+    </table>
+    
+    <h4>Source:</h4> 
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Bban Details</th>
+            <th>Iban</th>
+            <th>Own Account</th>
+            <th>Inpayment Form</th>
+            <th>Name</th>     
+            <th>Address</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                @_refreshPaymentStatusResponse.PaymentDetails.Source?.BbanDetails?.BankCode -
+                @_refreshPaymentStatusResponse.PaymentDetails.Source?.BbanDetails?.AccountNumber
+            </td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Source?.Iban?.IbanNumber</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Source?.OwnAccount</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Source?.InpaymentForm</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Source?.Name</td>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Source?.Address</td>
+        </tr>
+        </tbody>
+    </table>   
+
+    <h4>Execution:</h4>
+    <table class="table">
+        <thead>
+        <tr>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Execution?</td>
+        </tr>
+        </tbody>
+    </table>
+    
+    <h4>Identifiers:</h4>
+    <table class="table">
+        <thead>
+        <tr>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>@_refreshPaymentStatusResponse.PaymentDetails.Identifiers?</td>
+        </tr>
+        </tbody>
+    </table>
 }
 
 @code {
@@ -58,5 +190,30 @@
         }
         
         _refreshPaymentStatusResponse = result.Value;
+    }
+    
+    private static string ToShortDateTime(DateTimeOffset? dateTimeOffset)
+    {
+        if (dateTimeOffset == null)
+        {
+            return string.Empty;
+        }
+        
+        var sb = new StringBuilder(100);
+        
+        sb.Append(dateTimeOffset.Value.Year);
+        sb.Append('-');
+        sb.Append(dateTimeOffset.Value.Month);
+        sb.Append('-');
+        sb.Append(dateTimeOffset.Value.Day);
+        sb.Append(' ');
+        sb.Append(dateTimeOffset.Value.Hour);
+        sb.Append(':');
+        sb.Append(dateTimeOffset.Value.Minute);
+        sb.Append(':');
+        sb.Append(dateTimeOffset.Value.Second);
+        sb.Append(" UTC");
+        
+        return sb.ToString();
     }
 }
