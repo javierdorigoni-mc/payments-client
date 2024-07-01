@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using PaymentsClient.Domain;
 using PaymentsClient.Infrastructure.NagApiHttpClient;
 using PaymentsClient.WebUi.Components;
@@ -10,11 +11,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddUserSecrets<Program>();
+        builder.Configuration
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.*.json", optional: true, reloadOnChange: true)
+            .AddUserSecrets<Program>(reloadOnChange: true, optional: false);
+        
+        var nagApiSettings = new NagApiSettings();
+        builder.Configuration.GetSection("NagApi").Bind(nagApiSettings);
+        builder.Services.AddSingleton(Options.Create(nagApiSettings));
         
         builder.Services.AddDomainServices();
-        builder.Services.AddNagApiHttpClientServices(builder.Configuration);
-        builder.Services.AddRazorComponents()
+        builder.Services.AddNagApiHttpClientServices(nagApiSettings);
+        builder.Services
+            .AddRazorComponents()
             .AddInteractiveServerComponents();
         
         var app = builder.Build();
