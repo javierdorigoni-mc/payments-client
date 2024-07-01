@@ -13,10 +13,10 @@ public static class ServiceCollectionExtensions
             .AddHttpClient<INagApiClientService, NagApiHttpClientService>(
                 client =>
                 {
-                    client.BaseAddress = nagApiSettings.BaseUri ?? throw new ArgumentException("Missing NagApi Http Client Base Uri configuration");
-                    client.DefaultRequestHeaders.Add("X-Client-Id", nagApiSettings.ClientId ?? throw new ArgumentException("Missing NagApi ClientId Configuration"));
-                    client.DefaultRequestHeaders.Add("X-Client-Secret", nagApiSettings.ClientSecret ?? throw new ArgumentException("Missing NagApi ClientSecret Configuration"));
-                    client.Timeout = TimeSpan.FromSeconds(nagApiSettings.TimeOutInSeconds);
+                    client.BaseAddress = nagApiSettings.BaseUri ?? throw new ArgumentNullException(nameof(nagApiSettings.BaseUri), "Missing NagApi Http Client Base Uri configuration");
+                    client.DefaultRequestHeaders.Add("X-Client-Id", nagApiSettings.ClientId ?? throw new ArgumentNullException(nameof(nagApiSettings.ClientId), "Missing NagApi ClientId Configuration"));
+                    client.DefaultRequestHeaders.Add("X-Client-Secret", nagApiSettings.ClientSecret ?? throw new ArgumentNullException(nameof(nagApiSettings.ClientSecret), "Missing NagApi ClientSecret Configuration"));
+                    client.Timeout = TimeSpan.FromSeconds(nagApiSettings.TimeOutInSeconds ?? throw new ArgumentNullException(nameof(nagApiSettings.TimeOutInSeconds), "Missing NagApi TimeOutInSeconds Configuration"));
                 })
             .AddPolicyHandler(
                 HttpPolicyExtensions
