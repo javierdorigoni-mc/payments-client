@@ -10,15 +10,17 @@ namespace PaymentsClient.Domain.Tests;
 public class AccountsServiceTests
 {        
     private Fixture _fixture;
-    private Mock<INagApiClientService> _nagApiClientService;
+    private readonly Mock<INagApiClientService> _nagApiClientServiceMock;
     private AccountsService _accountsService;
 
-    [SetUp]
-    public void Setup()
+    /// <summary>
+    /// The attribute: [FixtureLifeCycle(LifeCycle.InstancePerTestCase)] triggers the constructor call for each test run
+    /// </summary>
+    public AccountsServiceTests()
     {
         _fixture = new Fixture();
-        _nagApiClientService = new Mock<INagApiClientService>();
-        _accountsService = new AccountsService(_nagApiClientService.Object);
+        _nagApiClientServiceMock = new Mock<INagApiClientService>();
+        _accountsService = new AccountsService(_nagApiClientServiceMock.Object);
     }
     
     [Test]
@@ -28,7 +30,7 @@ public class AccountsServiceTests
         var getAccountsRequest = _fixture.Create<GetAccountsRequest>();
         var accountFixture = _fixture.Create<AccountModel>();
         var getAccountResponse = new GetAccountsResponse() { Accounts = [accountFixture] };
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Setup(x => x.GetAccountsAsync(getAccountsRequest, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GetAccountsResponse>.Success(getAccountResponse));
 
@@ -38,7 +40,7 @@ public class AccountsServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Value, Is.EqualTo(getAccountResponse));
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Verify(x => x.GetAccountsAsync(getAccountsRequest, It.IsAny<CancellationToken>())
                 , Times.Once);
     }
@@ -50,7 +52,7 @@ public class AccountsServiceTests
         var getTransactionsRequest = _fixture.Create<GetTransactionsRequest>();
         var transactionFixture = _fixture.Create<TransactionModel>();
         var getTransactionsResponse = new GetTransactionsResponse() { Transactions = [transactionFixture] };
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Setup(x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GetTransactionsResponse>.Success(getTransactionsResponse));
 
@@ -60,7 +62,7 @@ public class AccountsServiceTests
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.EqualTo(getTransactionsResponse));
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Verify(x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>())
                 , Times.Once);
     }
@@ -73,7 +75,7 @@ public class AccountsServiceTests
         var accountFixture = _fixture.Create<AccountModel>();
         var getAccountResponse = new GetAccountsResponse() { Accounts = [accountFixture] };
         var cancellationToken = new CancellationTokenSource().Token;
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Setup(x => x.GetAccountsAsync(getAccountsRequest, cancellationToken))
             .ReturnsAsync(Result<GetAccountsResponse>.Success(getAccountResponse));
 
@@ -83,7 +85,7 @@ public class AccountsServiceTests
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.EqualTo(getAccountResponse));
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Verify(x => x.GetAccountsAsync(getAccountsRequest, cancellationToken)
                 , Times.Once);
     }
@@ -96,7 +98,7 @@ public class AccountsServiceTests
         var transactionFixture = _fixture.Create<TransactionModel>();
         var getTransactionsResponse = new GetTransactionsResponse() { Transactions = [transactionFixture] };
         var cancellationToken = new CancellationTokenSource().Token;
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Setup(x => x.GetTransactionsAsync(getTransactionsRequest, cancellationToken))
             .ReturnsAsync(Result<GetTransactionsResponse>.Success(getTransactionsResponse));
 
@@ -106,7 +108,7 @@ public class AccountsServiceTests
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.EqualTo(getTransactionsResponse));
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Verify(x => x.GetTransactionsAsync(getTransactionsRequest, cancellationToken)
                 , Times.Once);
     }
@@ -117,7 +119,7 @@ public class AccountsServiceTests
         // Arrange
         var request = _fixture.Create<GetAccountsRequest>();
         var expectedResponse = Result<GetAccountsResponse>.Failure("There is an issue with your request, please verify the logs.");
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Setup(x => x.GetAccountsAsync(request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResponse);
 
@@ -127,7 +129,7 @@ public class AccountsServiceTests
         // Assert
         Assert.That(result.Error, Is.EqualTo(expectedResponse.Error));
         Assert.That(result.IsSuccessful, Is.False);
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Verify(x => x.GetAccountsAsync(It.IsAny<GetAccountsRequest>(), It.IsAny<CancellationToken>())
                 , Times.Once);
     }
@@ -138,7 +140,7 @@ public class AccountsServiceTests
         // Arrange
         var request = _fixture.Create<GetTransactionsRequest>();
         var expectedResponse = Result<GetTransactionsResponse>.Failure("There is an issue with your request, please verify the logs.");
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Setup(x => x.GetTransactionsAsync(request, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResponse);
 
@@ -148,7 +150,7 @@ public class AccountsServiceTests
         // Assert
         Assert.That(result.Error, Is.EqualTo(expectedResponse.Error));
         Assert.That(result.IsSuccessful, Is.False);
-        _nagApiClientService
+        _nagApiClientServiceMock
             .Verify(x => x.GetTransactionsAsync(It.IsAny<GetTransactionsRequest>(), It.IsAny<CancellationToken>())
                 , Times.Once);
     }

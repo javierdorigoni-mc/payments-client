@@ -2,6 +2,7 @@
 @using PaymentsClient.Domain.Authentication
 @inject NavigationManager _navigationManager
 @inject IAuthenticationService _authenticationService
+@inject SessionContext _sessionContext
 @rendermode InteractiveServer
 
 <PageTitle>Initialize Authentication</PageTitle>
@@ -16,6 +17,14 @@
 @code {
     private string? _userHash;
 
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(_sessionContext.UserHash) is false)
+        {
+            _userHash = _sessionContext.UserHash;
+        }
+    }
+    
     private async Task InitializeAuthenticationAsync()
     {
         if (string.IsNullOrWhiteSpace(_userHash))
@@ -33,6 +42,7 @@
             return;
         }
 
+        _sessionContext.UserHash = _userHash;
         _navigationManager.NavigateTo(result.Value!.AuthUrl);
     }
 }

@@ -1,0 +1,27 @@
+﻿@page "/sign-out"
+@inject NavigationManager _navigationManager
+@inject SessionContext _sessionContext
+@rendermode InteractiveServer
+
+<PageTitle>Initialize Authentication</PageTitle>
+
+<h1>Sign Out</h1>
+
+@if (_loading)
+{
+    <p>Signing out...</p>
+}
+else
+{
+    <p>Signed out!</p>
+}
+
+@code {
+    private bool _loading = true;
+
+    protected override void OnInitialized()
+    {
+        _loading = false;
+        _sessionContext = new SessionContext();
+    }
+}

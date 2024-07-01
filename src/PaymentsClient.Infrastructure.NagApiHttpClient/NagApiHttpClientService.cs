@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using PaymentsClient.Domain;
@@ -120,6 +121,11 @@ public class NagApiHttpClientService : INagApiClientService
             return Result<TResponse>.Success(
                 JsonSerializer.Deserialize<TResponse>(stringContentResponse)
                 ?? throw new ArgumentNullException("HttpResponse","Unable to deserialize Http Response Body"));
+        }
+        catch (HttpRequestException hrex) when (hrex.StatusCode == HttpStatusCode.Forbidden)
+        {
+            _logger.LogError(hrex.Message);
+            return Result<TResponse>.Failure(KnownResultErrors.Forbidden);
         }
         catch (Exception ex)
         {

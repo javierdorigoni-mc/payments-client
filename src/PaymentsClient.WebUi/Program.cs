@@ -19,6 +19,8 @@ public class Program
         var nagApiSettings = new NagApiSettings();
         builder.Configuration.GetSection("NagApi").Bind(nagApiSettings);
         builder.Services.AddSingleton(Options.Create(nagApiSettings));
+
+        builder.Services.AddSingleton<SessionContext>();
         
         builder.Services.AddDomainServices();
         builder.Services.AddNagApiHttpClientServices(nagApiSettings);

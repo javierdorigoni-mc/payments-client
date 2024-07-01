@@ -51,6 +51,25 @@ public class AccountsControllerTests
     }
     
     [Test]
+    public async Task GetAccountsAsync_WithAccountsServiceReturningForbiddenError_Responds403Forbidden()
+    {        
+        // Arrange
+        var getAccountRequest = _fixture.Create<GetAccountsRequest>();
+        _accountsService
+            .Setup(x => x.GetAccountsAsync(It.IsAny<GetAccountsRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<GetAccountsResponse>.Failure("Forbidden"));
+        
+        // Act
+        var result = (ForbidResult?)(await _accountsController.GetAccountsAsync(getAccountRequest));
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        _accountsService
+            .Verify(x => x.GetAccountsAsync(getAccountRequest, It.IsAny<CancellationToken>())
+                , Times.Once);
+    }
+    
+    [Test]
     public async Task GetAccountsAsync_WithAccountsServiceReturningFailure_Responds400BadRequest()
     {        
         // Arrange
@@ -93,9 +112,27 @@ public class AccountsControllerTests
         var resultBody = (GetTransactionsResponse)result.Value;
         Assert.That(resultBody, Is.EqualTo(getTransactionsResponse));
         _accountsService
-            .Verify(
-                x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>()),
-                Times.Once);
+            .Verify(x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>())
+                , Times.Once);
+    }
+    
+    [Test]
+    public async Task GetTransactionsAsync_WithAccountsServiceReturningForbiddenError_Responds403Forbidden()
+    {        
+        // Arrange
+        var getTransactionsRequest = _fixture.Create<GetTransactionsRequest>();
+        _accountsService
+            .Setup(x => x.GetTransactionsAsync(It.IsAny<GetTransactionsRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<GetTransactionsResponse>.Failure("Forbidden"));
+        
+        // Act
+        var result = (ForbidResult?)(await _accountsController.GetTransactionsAsync(getTransactionsRequest));
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        _accountsService
+            .Verify(x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>())
+                , Times.Once);
     }
     
     [Test]

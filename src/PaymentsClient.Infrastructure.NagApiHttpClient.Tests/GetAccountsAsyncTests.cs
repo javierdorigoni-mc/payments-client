@@ -85,4 +85,35 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
     }
+    
+    [Test]
+    public async Task GetAccountsAsync_ForbiddenResponse_ResultContainsForbiddenError()
+    {
+        // Arrange
+        var request = FixtureBuilder.Create<GetAccountsRequest>();
+
+        HttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ThrowsAsync(new HttpRequestException("some forbidden message", new UnauthorizedAccessException("expired access token"), HttpStatusCode.Forbidden));
+
+        // Act
+        var result = await NagApiHttpClientService.GetAccountsAsync(request);
+
+        // Assert
+        Assert.That(result.IsSuccessful, Is.False);
+        Assert.That(result.Error, Is.EqualTo("Forbidden"));
+        Logger
+            .Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+    }
 }

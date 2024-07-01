@@ -1,8 +1,9 @@
 ﻿@page "/accounts"
 @using System.Collections.Immutable
 @using PaymentsClient.Domain.Accounts
-@inject NavigationManager _navigationManager
 @inject IAccountsService _accountsService
+@inject SessionContext _sessionContext
+@inject NavigationManager _navigationManager
 @rendermode InteractiveServer
 
 <PageTitle>Accounts</PageTitle>
@@ -87,6 +88,14 @@
     private string? _accessToken;
     private bool _loading;
 
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(_sessionContext.AccessToken) is false)
+        {
+            _accessToken = _sessionContext.AccessToken;
+        }
+    }
+    
     private async Task GetAccountsAsync()
     {
         _loading = true;

@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @inject IAuthenticationService _authenticationService
 @inject NavigationManager _navigationManager
+@inject SessionContext _sessionContext
 @rendermode InteractiveServer
 
 <PageTitle>Complete Authentication</PageTitle>
@@ -73,5 +74,7 @@
         }
     
         _authenticationResponse = result.Value;
+
+        _sessionContext.AccessToken = _authenticationResponse?.Session?.AccessToken;
     }
 }

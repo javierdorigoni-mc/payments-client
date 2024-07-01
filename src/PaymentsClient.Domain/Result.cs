@@ -17,3 +17,8 @@ public class Result<T> where T : class
 
     public static Result<T> Success(T value) => new Result<T>(value, true, null);
 }
+
+public static class KnownResultErrors
+{
+    public const string Forbidden = nameof(Forbidden);
+}

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PaymentsClient.Domain;
 using PaymentsClient.Domain.Accounts;
 
 namespace PaymentsClient.WebApi.Controllers;
@@ -25,6 +26,11 @@ public class AccountsController : ControllerBase
         {
             return Ok(result.Value);
         }
+
+        if (result.Error == KnownResultErrors.Forbidden)
+        {
+            return Forbid();
+        }
         
         return BadRequest(result.Error);
     }
@@ -39,6 +45,11 @@ public class AccountsController : ControllerBase
         if (result.IsSuccessful)
         {
             return Ok(result.Value);
+        }
+        
+        if (result.Error == KnownResultErrors.Forbidden)
+        {
+            return Forbid();
         }
         
         return BadRequest(result.Error);

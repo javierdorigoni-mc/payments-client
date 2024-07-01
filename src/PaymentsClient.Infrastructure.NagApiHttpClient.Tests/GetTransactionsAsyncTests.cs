@@ -96,4 +96,35 @@ public class GetTransactionsAsyncTests : NagApiHttpClientServiceTestsBase
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
     }
+    
+    [Test, AutoData]
+    public async Task GetTransactionsAsync_ForbiddenResponse_ResultContainsForbiddenError(string accessToken, string accountId)
+    {
+        // Arrange
+        var request = new GetTransactionsRequest(AccessToken: accessToken, AccountId: accountId);
+        
+        HttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ThrowsAsync(new HttpRequestException("some forbidden message", new UnauthorizedAccessException("expired access token"), HttpStatusCode.Forbidden));
+
+        // Act
+        var result = await NagApiHttpClientService.GetTransactionsAsync(request);
+
+        // Assert
+        Assert.That(result.IsSuccessful, Is.False);
+        Assert.That(result.Error, Is.EqualTo("Forbidden"));
+        Logger
+            .Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    It.IsAny<EventId>(),
+                    It.IsAny<It.IsAnyType>(),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+    }
 }
