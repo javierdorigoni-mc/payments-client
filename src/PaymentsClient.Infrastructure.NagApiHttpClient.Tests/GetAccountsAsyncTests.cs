@@ -4,19 +4,24 @@ using AutoFixture;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using PaymentsClient.Domain.Payments;
+using NUnit.Framework;
+using PaymentsClient.Domain.Accounts;
 
-namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
+namespace PaymentsClient.Infrastructure.NagApiHttpClient.Tests;
 
-public class CreatePaymentAsyncTests : NagApiHttpClientServiceTestsBase
+public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
 {
     [Test]
-    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful()
+    public async Task GetAccountsAsync_HttpMessageHandlerReturns200OK_ResultIsSuccessful()
     {
         // Arrange
-        var request = FixtureBuilder.Create<CreatePaymentRequest>();
-        var response = FixtureBuilder.Create<CreatePaymentResponse>();
-        
+        var request = FixtureBuilder.Create<GetAccountsRequest>();
+        var singleAccountResponse = FixtureBuilder.Create<AccountModel>();
+        var response = FixtureBuilder
+            .Build<GetAccountsResponse>()
+            .With(r => r.Accounts, [singleAccountResponse])
+            .Create();
+
         HttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -30,31 +35,31 @@ public class CreatePaymentAsyncTests : NagApiHttpClientServiceTestsBase
             });
 
         // Act
-        var result = await NagApiHttpClientService.CreatePaymentAsync(request);
+        var result = await NagApiHttpClientService.GetAccountsAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(string.IsNullOrWhiteSpace(result.Value.PaymentId), Is.False);
-        Assert.That(string.IsNullOrWhiteSpace(result.Value.RedirectUrl), Is.False);
+        Assert.That(result.Value.Accounts, Is.Not.Empty);
         HttpMessageHandler
             .Protected()
             .Verify(
                 "SendAsync",
                 Times.Once(),
                 ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == HttpMethod.Post &&
-                    req.RequestUri == new Uri("https://api.test.com/v1/payments/create") &&
+                    req.Method == HttpMethod.Get &&
+                    req.RequestUri == new Uri("https://api.test.com/v2/accounts") &&
                     req.Headers.Contains("X-Client-Id") &&
-                    req.Headers.Contains("X-Client-Secret")),
+                    req.Headers.Contains("X-Client-Secret") && 
+                    req.Headers.Contains("Authorization")),
                 ItExpr.IsAny<CancellationToken>());
     }
     
     [Test]
-    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors()
+    public async Task GetAccountsAsync_HttpMessageHandlerFails_ResultContainsErrors()
     {
         // Arrange
-        var request = FixtureBuilder.Create<CreatePaymentRequest>();
+        var request = FixtureBuilder.Create<GetAccountsRequest>();        
         
         HttpMessageHandler
             .Protected()
@@ -65,11 +70,11 @@ public class CreatePaymentAsyncTests : NagApiHttpClientServiceTestsBase
             .ThrowsAsync(new HttpRequestException("Request failed"));
 
         // Act
-        var result = await NagApiHttpClientService.CreatePaymentAsync(request);
+        var result = await NagApiHttpClientService.GetAccountsAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
-        Assert.That(string.Equals(result.Error, "There is an issue with your request, please verify the logs."), Is.True);
+        Assert.That(result.Error, Is.EqualTo("There is an issue with your request, please verify the logs."));
         Logger
             .Verify(
                 x => x.Log(

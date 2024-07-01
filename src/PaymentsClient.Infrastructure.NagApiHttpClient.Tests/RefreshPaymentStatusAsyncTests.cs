@@ -1,25 +1,28 @@
 using System.Net;
 using System.Net.Http.Json;
+using AutoFixture;
 using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using PaymentsClient.Domain.Authentication;
+using NUnit.Framework;
+using PaymentsClient.Domain.Payments;
 
-namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
+namespace PaymentsClient.Infrastructure.NagApiHttpClient.Tests;
 
-public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTestsBase
+public class RefreshPaymentStatusAsyncTests : NagApiHttpClientServiceTestsBase
 {
-    [Test]
-    [InlineAutoData("https://auth.example.com/auth/start", "some-session-id")]
-    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful(
-        string expectedAuthUrl,
-        string expectedSessionId,
-        string userHash, 
-        Uri redirectUrl)
+    [Test, AutoData]
+    public async Task RefreshPaymentStatusAsync_HttpMessageHandlerReturns200OK_ResultIsSuccessful(string paymentId)
     {
         // Arrange
-        var request = new InitializeAuthenticationRequest(UserHash: userHash, RedirectUrl: redirectUrl.AbsoluteUri);
+        var request = new RefreshPaymentStatusRequest(paymentId);
+        var paymentDetailsResponse = FixtureBuilder.Build<PaymentDetailsModel>()
+            .With(r => r.PaymentId, paymentId)
+            .Create();
+        var response = FixtureBuilder.Build<RefreshPaymentStatusResponse>()
+            .With(r => r.PaymentDetails, paymentDetailsResponse)
+            .Create();
         
         HttpMessageHandler
             .Protected()
@@ -30,21 +33,17 @@ public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTestsBa
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = JsonContent.Create(new InitializeAuthenticationResponse()
-                {
-                    AuthUrl = expectedAuthUrl,
-                    SessionId = expectedSessionId
-                })
+                Content = JsonContent.Create(response)
             });
 
         // Act
-        var result = await NagApiHttpClientService.InitializeAuthenticationAsync(request);
+        var result = await NagApiHttpClientService.RefreshPaymentStatusAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(string.Equals(result.Value.AuthUrl, expectedAuthUrl), Is.True);
-        Assert.That(string.Equals(result.Value.SessionId, expectedSessionId), Is.True);
+        Assert.That(result.Value.PaymentDetails, Is.Not.Null);
+        Assert.That(result.Value.PaymentDetails.PaymentId, Is.EqualTo(paymentId));
         HttpMessageHandler
             .Protected()
             .Verify(
@@ -52,18 +51,17 @@ public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTestsBa
                 Times.Once(),
                 ItExpr.Is<HttpRequestMessage>(req =>
                     req.Method == HttpMethod.Post &&
-                    req.RequestUri == new Uri("https://api.test.com/v1/authentication/initialize") &&
+                    req.RequestUri == new Uri($"https://api.test.com/v1/payments/{paymentId}/refresh-status") &&
                     req.Headers.Contains("X-Client-Id") &&
-                    req.Headers.Contains("X-Client-Secret") && 
-                    req.Content != null),
+                    req.Headers.Contains("X-Client-Secret")),
                 ItExpr.IsAny<CancellationToken>());
     }
     
-    [Test, AutoData]
-    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors(string userHash, Uri redirectUrl)
+    [Test]
+    public async Task RefreshPaymentStatusAsync_HttpMessageHandlerFails_ResultContainsErrors()
     {
         // Arrange
-        var request = new InitializeAuthenticationRequest(UserHash: userHash, RedirectUrl: redirectUrl.AbsoluteUri);
+        var request = FixtureBuilder.Create<RefreshPaymentStatusRequest>();
         
         HttpMessageHandler
             .Protected()
@@ -74,11 +72,11 @@ public class InitializeAuthenticationAsyncTests : NagApiHttpClientServiceTestsBa
             .ThrowsAsync(new HttpRequestException("Request failed"));
 
         // Act
-        var result = await NagApiHttpClientService.InitializeAuthenticationAsync(request);
+        var result = await NagApiHttpClientService.RefreshPaymentStatusAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
-        Assert.That(string.Equals(result.Error, "There is an issue with your request, please verify the logs."), Is.True);
+        Assert.That(result.Error, Is.EqualTo("There is an issue with your request, please verify the logs."));
         Logger
             .Verify(
                 x => x.Log(

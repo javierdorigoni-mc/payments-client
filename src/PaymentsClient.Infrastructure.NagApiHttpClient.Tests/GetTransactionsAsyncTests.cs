@@ -1,27 +1,33 @@
 using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Json;
-using AutoFixture;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
+using NUnit.Framework;
 using PaymentsClient.Domain.Accounts;
 
-namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
+namespace PaymentsClient.Infrastructure.NagApiHttpClient.Tests;
 
-public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
+public class GetTransactionsAsyncTests : NagApiHttpClientServiceTestsBase
 {
     [Test]
-    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful()
+    [AutoData]
+    public async Task GetTransactionsAsync_HttpMessageHandlerReturns200OK_ResultIsSuccessful(
+        string accessToken,
+        string? pagingToken,
+        string accountId,
+        bool withDetails)
     {
         // Arrange
-        var request = FixtureBuilder.Create<GetAccountsRequest>();
-        var singleAccountResponse = FixtureBuilder.Create<AccountModel>();
-        var response = FixtureBuilder
-            .Build<GetAccountsResponse>()
-            .With(r => r.Accounts, [singleAccountResponse])
-            .Create();
-
+        var fromDate = "2021-01-01";
+        var request = new GetTransactionsRequest(
+            AccessToken: accessToken,
+            AccountId: accountId,
+            FromDate: fromDate,
+            WithDetails: withDetails);
+        
         HttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -31,16 +37,21 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = JsonContent.Create(response)
+                Content = JsonContent.Create(new GetTransactionsResponse()
+                {
+                    Transactions = ImmutableArray<TransactionModel>.Empty,
+                    PagingToken = pagingToken
+                })
             });
 
         // Act
-        var result = await NagApiHttpClientService.GetAccountsAsync(request);
+        var result = await NagApiHttpClientService.GetTransactionsAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.Accounts, Is.Not.Empty);
+        Assert.That(result.Value.Transactions, Is.Empty);
+        Assert.That(result.Value.PagingToken, Is.EqualTo(pagingToken));
         HttpMessageHandler
             .Protected()
             .Verify(
@@ -48,18 +59,18 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
                 Times.Once(),
                 ItExpr.Is<HttpRequestMessage>(req =>
                     req.Method == HttpMethod.Get &&
-                    req.RequestUri == new Uri("https://api.test.com/v2/accounts") &&
+                    req.RequestUri == new Uri($"https://api.test.com/v2/accounts/{accountId}/transactions?fromDate={fromDate}&withDetails={withDetails.ToString().ToLowerInvariant()}") &&
                     req.Headers.Contains("X-Client-Id") &&
                     req.Headers.Contains("X-Client-Secret") && 
                     req.Headers.Contains("Authorization")),
                 ItExpr.IsAny<CancellationToken>());
     }
     
-    [Test]
-    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors()
+    [Test, AutoData]
+    public async Task GetTransactionsAsync_HttpMessageHandlerFails_ResultContainsErrors(string accessToken, string accountId)
     {
         // Arrange
-        var request = FixtureBuilder.Create<GetAccountsRequest>();        
+        var request = new GetTransactionsRequest(AccessToken: accessToken, AccountId: accountId);
         
         HttpMessageHandler
             .Protected()
@@ -70,11 +81,11 @@ public class GetAccountsAsyncTests : NagApiHttpClientServiceTestsBase
             .ThrowsAsync(new HttpRequestException("Request failed"));
 
         // Act
-        var result = await NagApiHttpClientService.GetAccountsAsync(request);
+        var result = await NagApiHttpClientService.GetTransactionsAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
-        Assert.That(string.Equals(result.Error, "There is an issue with your request, please verify the logs."), Is.True);
+        Assert.That(result.Error, Is.EqualTo("There is an issue with your request, please verify the logs."));
         Logger
             .Verify(
                 x => x.Log(

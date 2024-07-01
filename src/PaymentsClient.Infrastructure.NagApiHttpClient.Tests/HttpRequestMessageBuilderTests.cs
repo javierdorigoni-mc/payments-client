@@ -1,9 +1,9 @@
 using System.Text.Json;
 using AutoFixture.NUnit3;
+using NUnit.Framework;
 
-namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
+namespace PaymentsClient.Infrastructure.NagApiHttpClient.Tests;
 
-[TestFixture]
 [TestFixture]
 public class HttpRequestMessageBuilderTests
 {
@@ -38,7 +38,7 @@ public class HttpRequestMessageBuilderTests
         var request = builder.Build();
 
         // Assert
-        Assert.That(Equals(httpMethod, request.Method), Is.True);
+        Assert.That(request.Method, Is.EqualTo(httpMethod));
     }
 
     [Test]
@@ -46,14 +46,14 @@ public class HttpRequestMessageBuilderTests
     {
         // Arrange
         var builder = HttpRequestMessageBuilder.Create();
-        var uri = "https://example.com/resource";
+        var baseUrl = "https://example.com/resource";
 
         // Act
-        builder.WithRequestUri(uri);
+        builder.WithRequestUri(baseUrl);
         var request = builder.Build();
 
         // Assert
-        Assert.That(string.Equals(uri, request.RequestUri?.ToString()), Is.True);
+        Assert.That(request.RequestUri?.ToString(), Is.EqualTo(baseUrl));
     }
 
     [Test]
@@ -61,15 +61,15 @@ public class HttpRequestMessageBuilderTests
     {
         // Arrange
         var builder = HttpRequestMessageBuilder.Create();
-        var uri = "https://example.com/resource";
-        builder.WithRequestUri(uri);
+        var baseUrl = "https://example.com/resource";
+        builder.WithRequestUri(baseUrl);
 
         // Act
         builder.WithOptionalQueryStringParameter("param", "value");
         var request = builder.Build();
 
         // Assert
-        Assert.That(string.Equals($"{uri}?param=value", request.RequestUri?.ToString()), Is.True);
+        Assert.That(request.RequestUri?.ToString(), Is.EqualTo($"{baseUrl}?param=value"));
     }
 
     [Test]
@@ -80,15 +80,15 @@ public class HttpRequestMessageBuilderTests
     {
         // Arrange
         var builder = HttpRequestMessageBuilder.Create();
-        var uri = "https://example.com/resource";
-        builder.WithRequestUri(uri);
+        var baseUrl = "https://example.com/resource";
+        builder.WithRequestUri(baseUrl);
 
         // Act
         builder.WithOptionalQueryStringParameter("param", value);
         var request = builder.Build();
 
         // Assert
-        Assert.That(string.Equals(uri, request.RequestUri?.ToString()), Is.True);
+        Assert.That(request.RequestUri?.ToString(), Is.EqualTo(baseUrl));
     }
 
     [Test]
@@ -105,7 +105,7 @@ public class HttpRequestMessageBuilderTests
         // Assert
         var requestContent = request.Content?.ReadAsStringAsync().Result;
         var expectedContent = JsonSerializer.Serialize(content, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        Assert.That(string.Equals(expectedContent, requestContent), Is.True);
+        Assert.That(requestContent, Is.EqualTo(expectedContent));
     }
 
     [Test]
@@ -120,7 +120,7 @@ public class HttpRequestMessageBuilderTests
         var request = builder.Build();
 
         // Assert
-        Assert.That(string.Equals($"Bearer {token}", request.Headers.Authorization?.ToString()), Is.True);
+        Assert.That(request.Headers.Authorization?.ToString(), Is.EqualTo($"Bearer {token}"));
     }
 
     [Test]
@@ -133,7 +133,7 @@ public class HttpRequestMessageBuilderTests
         var request = builder.Build();
 
         // Assert
-        Assert.That(Equals(HttpMethod.Post, request.Method), Is.True);
+        Assert.That(request.Method, Is.EqualTo(HttpMethod.Post));
     }
 
     [Test]
@@ -156,11 +156,11 @@ public class HttpRequestMessageBuilderTests
 
         // Assert
         Assert.That(Equals(HttpMethod.Put, request.Method), Is.True);
-        Assert.That(string.Equals($"{uri}?param=value", request.RequestUri?.ToString()), Is.True);
-        Assert.That(string.Equals($"Bearer {token}", request.Headers.Authorization?.ToString()), Is.True);
+        Assert.That(request.RequestUri?.ToString(), Is.EqualTo($"{uri}?param=value"));
+        Assert.That(request.Headers.Authorization?.ToString(), Is.EqualTo($"Bearer {token}"));
 
         var requestContent = request.Content?.ReadAsStringAsync().Result;
         var expectedContent = JsonSerializer.Serialize(content, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        Assert.That(string.Equals(expectedContent, requestContent), Is.True);
+        Assert.That(requestContent, Is.EqualTo(expectedContent));
     }
 }

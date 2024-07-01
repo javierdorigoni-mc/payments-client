@@ -1,21 +1,23 @@
 using AutoFixture;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using NUnit.Framework;
 using PaymentsClient.Domain;
 using PaymentsClient.Domain.Accounts;
 using PaymentsClient.WebApi.Controllers;
 
-namespace PaymentsClient.WebApi.UnitTests;
+namespace PaymentsClient.WebApi.Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class AccountsControllerTests
 {
-    private readonly Fixture _fixture;
-    private readonly AccountsController _accountsController;
-    private readonly Mock<IAccountsService> _accountsService;
+    private Fixture _fixture;
+    private AccountsController _accountsController;
+    private Mock<IAccountsService> _accountsService;
 
-    public AccountsControllerTests()
+    [SetUp]
+    public void Setup()
     {
         _fixture = new Fixture();
         _accountsService = new Mock<IAccountsService>();
@@ -23,7 +25,7 @@ public class AccountsControllerTests
     }
 
     [Test]
-    public async Task GivenAccountsServiceReturnsSuccessful_WhenGetAccountsAsync_ThenResponds200OK()
+    public async Task GetAccountsAsync_WithAccountsServiceReturningSuccess_Responds200OK()
     {
         // Arrange
         var getAccountRequest = _fixture.Create<GetAccountsRequest>();
@@ -40,8 +42,8 @@ public class AccountsControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));
         Assert.That(result.Value, Is.Not.Null);
-        var payload = (GetAccountsResponse)result.Value;
-        Assert.That(payload, Is.EqualTo(getAccountResponse));
+        var resultBody = (GetAccountsResponse)result.Value;
+        Assert.That(resultBody, Is.EqualTo(getAccountResponse));
         _accountsService
             .Verify(
                 x => x.GetAccountsAsync(getAccountRequest, It.IsAny<CancellationToken>()),
@@ -49,7 +51,7 @@ public class AccountsControllerTests
     }
     
     [Test]
-    public async Task GivenAccountsServiceReturnsFailure_WhenGetAccountsAsync_ThenResponds400BadRequest()
+    public async Task GetAccountsAsync_WithAccountsServiceReturningFailure_Responds400BadRequest()
     {        
         // Arrange
         var getAccountRequest = _fixture.Create<GetAccountsRequest>();
@@ -63,7 +65,6 @@ public class AccountsControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));      
-        Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value, Is.EqualTo("invalid request"));
         _accountsService
             .Verify(
@@ -72,7 +73,7 @@ public class AccountsControllerTests
     }
     
     [Test]
-    public async Task GivenAccountsServiceReturnsSuccessful_WhenGetTransactionsAsync_ThenResponds200OK()
+    public async Task GetTransactionsAsync_WithAccountsServiceReturningSuccess_Responds200OK()
     {
         // Arrange
         var getTransactionsRequest = _fixture.Create<GetTransactionsRequest>();
@@ -89,8 +90,8 @@ public class AccountsControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));
         Assert.That(result.Value, Is.Not.Null);
-        var payload = (GetTransactionsResponse)result.Value;
-        Assert.That(payload, Is.EqualTo(getTransactionsResponse));
+        var resultBody = (GetTransactionsResponse)result.Value;
+        Assert.That(resultBody, Is.EqualTo(getTransactionsResponse));
         _accountsService
             .Verify(
                 x => x.GetTransactionsAsync(getTransactionsRequest, It.IsAny<CancellationToken>()),
@@ -98,7 +99,7 @@ public class AccountsControllerTests
     }
     
     [Test]
-    public async Task GivenTransactionsServiceReturnsFailure_WhenGetTransactionsAsync_ThenResponds400BadRequest()
+    public async Task GetTransactionsAsync_WithAccountsServiceReturningFailure_Responds400BadRequest()
     {        
         // Arrange
         var getTransactionsRequest = _fixture.Create<GetTransactionsRequest>();
@@ -112,7 +113,6 @@ public class AccountsControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));      
-        Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value, Is.EqualTo("invalid request"));
         _accountsService
             .Verify(

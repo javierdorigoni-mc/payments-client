@@ -1,27 +1,29 @@
 using AutoFixture.NUnit3;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using NUnit.Framework;
 using PaymentsClient.Domain;
 using PaymentsClient.WebApi.Controllers;
 using PaymentsClient.Domain.Authentication;
 
-namespace PaymentsClient.WebApi.UnitTests;
+namespace PaymentsClient.WebApi.Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class AuthenticationControllerTests
 {
-    private readonly AuthenticationController _authenticationController;
-    private readonly Mock<IAuthenticationService> _authenticationService;
+    private AuthenticationController _authenticationController;
+    private Mock<IAuthenticationService> _authenticationService;
 
-    public AuthenticationControllerTests()
+    [SetUp]
+    public void Setup()
     {
         _authenticationService = new Mock<IAuthenticationService>();
         _authenticationController = new AuthenticationController(_authenticationService.Object);
     }
     
     [Test, AutoData]
-    public async Task GivenAuthenticationServiceReturnsSuccessful_WhenInitializeAsync_ThenResponds200OK(string userHash, Uri redirectUrl, string authUrl, string sessionId)
+    public async Task InitializeAsync_WithAuthenticationServiceReturningSuccess_Responds200OK(string userHash, Uri redirectUrl, string authUrl, string sessionId)
     {
         // Arrange
         _authenticationService
@@ -37,8 +39,8 @@ public class AuthenticationControllerTests
         Assert.That(result.StatusCode, Is.EqualTo(200));      
         Assert.That(result.Value, Is.Not.Null);
         var payload = (InitializeAuthenticationResponse)result.Value;
-        Assert.That(string.Equals(payload.AuthUrl, authUrl), Is.True);
-        Assert.That(string.Equals(payload.SessionId, sessionId), Is.True);
+        Assert.That(payload.AuthUrl, Is.EqualTo(authUrl));
+        Assert.That(payload.SessionId, Is.EqualTo(sessionId));
         _authenticationService
             .Verify(
                 x => x.InitializeAuthenticationAsync(request, It.IsAny<CancellationToken>()),
@@ -46,7 +48,7 @@ public class AuthenticationControllerTests
     }
     
     [Test, AutoData]
-    public async Task GivenAuthenticationServiceReturnsFailure_WhenInitializeAsync_ThenResponds400BadRequest(string userHash, Uri redirectUrl)
+    public async Task InitializeAsync_WithAuthenticationServiceReturningFailure_Responds400BadRequest(string userHash, Uri redirectUrl)
     {
         // Arrange
         _authenticationService
@@ -60,8 +62,8 @@ public class AuthenticationControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));      
-        Assert.That(result.Value, Is.Not.Null);
-        Assert.That(string.Equals(result.Value, "invalid request"), Is.True);
+        Assert.That(result.Value, Is.EqualTo("invalid request"));
+
         _authenticationService
             .Verify(
                 x => x.InitializeAuthenticationAsync(request, It.IsAny<CancellationToken>()),
@@ -69,7 +71,7 @@ public class AuthenticationControllerTests
     }
     
     [Test, AutoData]
-    public async Task GivenAuthenticationServiceReturnsSuccessful_WhenCompleteAsync_ThenResponds200OK(string code)
+    public async Task CompleteAsync_WithAuthenticationServiceReturningSuccess_Responds200OK(string code)
     {
         // Arrange
         _authenticationService
@@ -93,7 +95,7 @@ public class AuthenticationControllerTests
     }
     
     [Test, AutoData]
-    public async Task GivenAuthenticationServiceReturnsFailure_WhenCompleteAsync_ThenResponds400BadRequest(string code)
+    public async Task CompleteAsync_WithAuthenticationServiceReturningFailure_Responds400BadRequest(string code)
     {
         // Arrange
         _authenticationService
@@ -107,8 +109,7 @@ public class AuthenticationControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));      
-        Assert.That(result.Value, Is.Not.Null);
-        Assert.That(string.Equals(result.Value, "invalid request"), Is.True);
+        Assert.That(result.Value, Is.EqualTo("invalid request"));
         _authenticationService
             .Verify(
                 x => x.CompleteAuthenticationAsync(request, It.IsAny<CancellationToken>()),

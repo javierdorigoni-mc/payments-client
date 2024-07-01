@@ -1,28 +1,23 @@
 using System.Net;
 using System.Net.Http.Json;
 using AutoFixture;
-using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using PaymentsClient.Domain.Payments;
+using NUnit.Framework;
+using PaymentsClient.Domain.Authentication;
 
-namespace PaymentsClient.Infrastructure.NagApiHttpClient.UnitTests;
+namespace PaymentsClient.Infrastructure.NagApiHttpClient.Tests;
 
-public class RefreshPaymentStatusAsyncTests : NagApiHttpClientServiceTestsBase
+public class ExchangeTokenAsyncTests : NagApiHttpClientServiceTestsBase
 {
-    [Test, AutoData]
-    public async Task GivenHttpMessageHandlerReturns200OK_ThenResultIsSuccessful(string paymentId)
+    [Test]
+    public async Task ExchangeTokenAsync_HttpMessageHandlerReturns200OK_ResultIsSuccessful()
     {
         // Arrange
-        var request = new RefreshPaymentStatusRequest(paymentId);
-        var paymentDetailsResponse = FixtureBuilder.Build<PaymentDetailsModel>()
-            .With(r => r.PaymentId, paymentId)
-            .Create();
-        var response = FixtureBuilder.Build<RefreshPaymentStatusResponse>()
-            .With(r => r.PaymentDetails, paymentDetailsResponse)
-            .Create();
-        
+        var request = FixtureBuilder.Create<CompleteAuthenticationRequest>(); 
+        var response = FixtureBuilder.Create<CompleteAuthenticationResponse>();
+
         HttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -36,13 +31,14 @@ public class RefreshPaymentStatusAsyncTests : NagApiHttpClientServiceTestsBase
             });
 
         // Act
-        var result = await NagApiHttpClientService.RefreshPaymentStatusAsync(request);
+        var result = await NagApiHttpClientService.ExchangeTokenAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.True);
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.PaymentDetails, Is.Not.Null);
-        Assert.That(result.Value.PaymentDetails.PaymentId, Is.EqualTo(paymentId));
+        Assert.That(result.Value.Login, Is.Not.Null);
+        Assert.That(result.Value.Session, Is.Not.Null);
+        Assert.That(result.Value.ProviderId, Is.Not.Null);
         HttpMessageHandler
             .Protected()
             .Verify(
@@ -50,17 +46,18 @@ public class RefreshPaymentStatusAsyncTests : NagApiHttpClientServiceTestsBase
                 Times.Once(),
                 ItExpr.Is<HttpRequestMessage>(req =>
                     req.Method == HttpMethod.Post &&
-                    req.RequestUri == new Uri($"https://api.test.com/v1/payments/{paymentId}/refresh-status") &&
+                    req.RequestUri == new Uri("https://api.test.com/v1/authentication/tokens") &&
                     req.Headers.Contains("X-Client-Id") &&
-                    req.Headers.Contains("X-Client-Secret")),
+                    req.Headers.Contains("X-Client-Secret") && 
+                    req.Content != null),
                 ItExpr.IsAny<CancellationToken>());
     }
     
     [Test]
-    public async Task GivenHttpMessageHandlerFails_ThenResultContainsErrors()
+    public async Task ExchangeTokenAsync_HttpMessageHandlerFails_ResultContainsErrors()
     {
         // Arrange
-        var request = FixtureBuilder.Create<RefreshPaymentStatusRequest>();
+        var request = FixtureBuilder.Create<CompleteAuthenticationRequest>(); 
         
         HttpMessageHandler
             .Protected()
@@ -71,11 +68,11 @@ public class RefreshPaymentStatusAsyncTests : NagApiHttpClientServiceTestsBase
             .ThrowsAsync(new HttpRequestException("Request failed"));
 
         // Act
-        var result = await NagApiHttpClientService.RefreshPaymentStatusAsync(request);
+        var result = await NagApiHttpClientService.ExchangeTokenAsync(request);
 
         // Assert
         Assert.That(result.IsSuccessful, Is.False);
-        Assert.That(string.Equals(result.Error, "There is an issue with your request, please verify the logs."), Is.True);
+        Assert.That(result.Error, Is.EqualTo("There is an issue with your request, please verify the logs."));
         Logger
             .Verify(
                 x => x.Log(

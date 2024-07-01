@@ -1,25 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NUnit.Framework;
 using PaymentsClient.WebApi.Controllers;
 
-namespace PaymentsClient.WebApi.UnitTests;
+namespace PaymentsClient.WebApi.Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class PingControllerTests
 {
-    private readonly PingController _pingController;
-    private readonly Mock<ILogger<PingController>> _logger;
+    private PingController _pingController;
+    private Mock<ILogger<PingController>> _logger;
 
-    public PingControllerTests()
+    [SetUp]
+    public void Setup()
     {
         _logger = new Mock<ILogger<PingController>>();
         _pingController = new PingController(_logger.Object);
     }
     
     [Test]
-    public void WhenPingCalled_ThenPongResponded()
+    public void PingCalled_Responds200OkWithPong()
     {
         // Arrange
         
@@ -29,8 +31,7 @@ public class PingControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(200));      
-        Assert.That(result.Value, Is.Not.Null); 
-        Assert.That(string.Equals(result.Value.ToString(), "Pong"));
+        Assert.That(result.Value, Is.EqualTo("Pong"));
         _logger
             .Verify(
                 x => x.Log(

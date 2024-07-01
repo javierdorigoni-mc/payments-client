@@ -1,21 +1,23 @@
 using AutoFixture;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using NUnit.Framework;
 using PaymentsClient.Domain;
 using PaymentsClient.Domain.Payments;
 using PaymentsClient.WebApi.Controllers;
 
-namespace PaymentsClient.WebApi.UnitTests;
+namespace PaymentsClient.WebApi.Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class PaymentsControllerTests
 {
-    private readonly Fixture _fixture;
-    private readonly PaymentsController _paymentsController;
-    private readonly Mock<IPaymentsService> _paymentsService;
+    private Fixture _fixture;
+    private PaymentsController _paymentsController;
+    private Mock<IPaymentsService> _paymentsService;
 
-    public PaymentsControllerTests()
+    [SetUp]
+    public void Setup()
     {
         _fixture = new Fixture();
         _paymentsService = new Mock<IPaymentsService>();
@@ -23,7 +25,7 @@ public class PaymentsControllerTests
     }
 
     [Test]
-    public async Task GivenPaymentsServiceReturnsSuccessful_WhenCreatePaymentAsync_ThenResponds200OK()
+    public async Task CreatePaymentAsync_WithPaymentsServiceReturningSuccess_Responds200OK()
     {
         // Arrange
         var createPaymentRequest = _fixture.Create<CreatePaymentRequest>();
@@ -48,7 +50,7 @@ public class PaymentsControllerTests
     }
     
     [Test]
-    public async Task GivenPaymentsServiceReturnsFailure_WhenCreatePaymentsAsync_ThenResponds400BadRequest()
+    public async Task CreatePaymentAsync_WithPaymentsServiceReturningFailure_Responds400BadRequest()
     {      
         // Arrange
         var createPaymentRequest = _fixture.Create<CreatePaymentRequest>();
@@ -71,7 +73,7 @@ public class PaymentsControllerTests
     }
     
     [Test]
-    public async Task GivenPaymentsServiceReturnsSuccessful_WhenRefreshStatusAsync_ThenResponds200OK()
+    public async Task RefreshStatusAsync_WithPaymentsServiceReturningSuccess_Responds200OK()
     {
         // Arrange
         var refreshPaymentStatusRequest = _fixture.Create<RefreshPaymentStatusRequest>();
@@ -96,7 +98,7 @@ public class PaymentsControllerTests
     }
     
     [Test]
-    public async Task GivenPaymentsServiceReturnsFailure_WhenRefreshStatusAsync_ThenResponds400BadRequest()
+    public async Task RefreshStatusAsync_WithPaymentsServiceReturningFailure_Responds400BadRequest()
     {      
         // Arrange
         var refreshPaymentStatusRequest = _fixture.Create<RefreshPaymentStatusRequest>();
@@ -110,7 +112,6 @@ public class PaymentsControllerTests
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.That(result.StatusCode, Is.EqualTo(400));      
-        Assert.That(result.Value, Is.Not.Null);
         Assert.That(result.Value, Is.EqualTo("invalid request"));
         _paymentsService
             .Verify(

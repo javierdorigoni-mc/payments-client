@@ -1,18 +1,20 @@
 using AutoFixture;
 using Moq;
+using NUnit.Framework;
 using PaymentsClient.Domain.Authentication;
 
-namespace PaymentsClient.Domain.UnitTests;
+namespace PaymentsClient.Domain.Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class AuthenticationServiceTests
 {        
-    private readonly Fixture _fixture;
-    private readonly Mock<INagApiClientService> _nagApiClientService;
-    private readonly AuthenticationService _authenticationService;
+    private Fixture _fixture;
+    private Mock<INagApiClientService> _nagApiClientService;
+    private AuthenticationService _authenticationService;
 
-    public AuthenticationServiceTests()
+    [SetUp]
+    public void Setup()
     {        
         _fixture = new Fixture();
         _nagApiClientService = new Mock<INagApiClientService>();
@@ -20,7 +22,7 @@ public class AuthenticationServiceTests
     }
     
     [Test]
-    public async Task GivenValidRequest_WhenInitializeAuthenticationAsyncCalled_ThenReturnsExpectedResult()
+    public async Task InitializeAuthenticationAsync_WithValidRequest_ReturnsExpectedResult()
     {
         // Arrange
         var request = _fixture.Create<InitializeAuthenticationRequest>();
@@ -33,14 +35,14 @@ public class AuthenticationServiceTests
         var result = await _authenticationService.InitializeAuthenticationAsync(request);
 
         // Assert
-        Assert.That(expectedResponse.Equals(result), Is.True);
+        Assert.That(result, Is.EqualTo(expectedResponse));
         _nagApiClientService
             .Verify(x => x.InitializeAuthenticationAsync(request, It.IsAny<CancellationToken>())
                 , Times.Once);
     }
 
     [Test]
-    public async Task GivenValidRequest_WhenCompleteAuthenticationAsyncCalled_ThenReturnsExpectedResult()
+    public async Task CompleteAuthenticationAsync_WithValidRequest_ReturnsExpectedResult()
     {
         // Arrange
         var request = _fixture.Create<CompleteAuthenticationRequest>();
@@ -53,13 +55,14 @@ public class AuthenticationServiceTests
         var result = await _authenticationService.CompleteAuthenticationAsync(request);
 
         // Assert
-        Assert.That(expectedResponse.Equals(result), Is.True);
-        _nagApiClientService.Verify(x => x.ExchangeTokenAsync(request, It.IsAny<CancellationToken>())
-            , Times.Once);
+        Assert.That(result, Is.EqualTo(expectedResponse));
+        _nagApiClientService
+            .Verify(x => x.ExchangeTokenAsync(request, It.IsAny<CancellationToken>())
+                , Times.Once);
     }
 
     [Test]
-    public async Task GivenInvalidCode_WhenCompleteAuthenticationAsyncCalled_ThenReturnsFailureResult()
+    public async Task CompleteAuthenticationAsync_WithInvalidCode_ReturnsFailureResult()
     {
         // Arrange
         var request = _fixture.Build<CompleteAuthenticationRequest>()
@@ -71,46 +74,52 @@ public class AuthenticationServiceTests
         var result = await _authenticationService.CompleteAuthenticationAsync(request);
 
         // Assert
-        Assert.That(expectedResponse.Error.Equals(result.Error), Is.True);
         Assert.That(result.IsSuccessful, Is.False);
+        Assert.That(result.Error, Is.EqualTo(expectedResponse.Error));
         _nagApiClientService
             .Verify(x => x.ExchangeTokenAsync(It.IsAny<CompleteAuthenticationRequest>(), It.IsAny<CancellationToken>())
                 , Times.Never);
     }
 
     [Test]
-    public async Task GivenCancellationToken_WhenInitializeAuthenticationAsyncCalled_ThenCancellationTokenIsPassed()
+    public async Task InitializeAuthenticationAsync_WithCancellationToken_CancellationTokenIsPassed()
     {
         // Arrange
         var request = _fixture.Create<InitializeAuthenticationRequest>();
         var expectedResponse = _fixture.Create<Result<InitializeAuthenticationResponse>>();
         var cancellationToken = new CancellationTokenSource().Token;
-        _nagApiClientService.Setup(x => x.InitializeAuthenticationAsync(request, cancellationToken))
+        _nagApiClientService
+            .Setup(x => x.InitializeAuthenticationAsync(request, cancellationToken))
             .ReturnsAsync(expectedResponse);
 
         // Act
         var result = await _authenticationService.InitializeAuthenticationAsync(request, cancellationToken);
 
         // Assert
-        Assert.That(expectedResponse.Equals(result), Is.True);
-        _nagApiClientService.Verify(x => x.InitializeAuthenticationAsync(request, cancellationToken), Times.Once);
+        Assert.That(result, Is.EqualTo(expectedResponse));
+        _nagApiClientService
+            .Verify(x => x.InitializeAuthenticationAsync(request, cancellationToken)
+                , Times.Once);
     }
 
     [Test]
-    public async Task GivenCancellationToken_WhenCompleteAuthenticationAsyncCalled_ThenCancellationTokenIsPassed()
+    public async Task CompleteAuthenticationAsync_WithCancellationToken_CancellationTokenIsPassed()
     {
         // Arrange
         var request = _fixture.Create<CompleteAuthenticationRequest>();
         var expectedResponse = _fixture.Create<Result<CompleteAuthenticationResponse>>();
         var cancellationToken = new CancellationTokenSource().Token;
-        _nagApiClientService.Setup(x => x.ExchangeTokenAsync(request, cancellationToken))
+        _nagApiClientService
+            .Setup(x => x.ExchangeTokenAsync(request, cancellationToken))
             .ReturnsAsync(expectedResponse);
 
         // Act
         var result = await _authenticationService.CompleteAuthenticationAsync(request, cancellationToken);
 
         // Assert
-        Assert.That(expectedResponse.Equals(result), Is.True);
-        _nagApiClientService.Verify(x => x.ExchangeTokenAsync(request, cancellationToken), Times.Once);
+        Assert.That(result, Is.EqualTo(expectedResponse));
+        _nagApiClientService
+            .Verify(x => x.ExchangeTokenAsync(request, cancellationToken)
+                , Times.Once);
     }
 }

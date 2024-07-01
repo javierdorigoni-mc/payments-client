@@ -1,19 +1,21 @@
 using AutoFixture;
 using Moq;
+using NUnit.Framework;
 using PaymentsClient.Domain.Accounts;
 using PaymentsClient.Domain.Payments;
 
-namespace PaymentsClient.Domain.UnitTests;
+namespace PaymentsClient.Domain.Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
 public class PaymentsServiceTests
 {        
-    private readonly Fixture _fixture;
-    private readonly Mock<INagApiClientService> _nagApiClientService;
-    private readonly PaymentsService _paymentsService;
+    private Fixture _fixture;
+    private Mock<INagApiClientService> _nagApiClientService;
+    private PaymentsService _paymentsService;
 
-    public PaymentsServiceTests()
+    [SetUp]
+    public void Setup()
     {
         _fixture = new Fixture();
         _nagApiClientService = new Mock<INagApiClientService>();
@@ -21,7 +23,7 @@ public class PaymentsServiceTests
     }
     
     [Test]
-    public async Task GivenValidRequest_WhenCreatePaymentAsyncCalled_ThenReturnsExpectedResult()
+    public async Task CreatePaymentAsync_WithValidRequest_ReturnsExpectedResult()
     {
         // Arrange
         var request = _fixture.Build<CreatePaymentRequest>()
@@ -43,7 +45,7 @@ public class PaymentsServiceTests
     }
 
     [Test]
-    public async Task GivenInvalidRedirectUrl_WhenCreatePaymentAsyncCalled_ThenReturnsFailureResult()
+    public async Task CreatePaymentsAsync_WithInvalidRedirectUrl_ReturnsFailureResult()
     {
         // Arrange
         var request = _fixture.Build<CreatePaymentRequest>()
@@ -63,7 +65,7 @@ public class PaymentsServiceTests
     }
 
     [Test]
-    public async Task GivenInvalidAmount_WhenCreatePaymentAsyncCalled_ThenReturnsFailureResult()
+    public async Task CreatePaymentsAsync_WithInvalidAmount_ReturnsFailureResult()
     {
         // Arrange
         var invalidCreatePaymentRequestDetails = _fixture.Build<CreatePaymentRequestDetails>()
@@ -90,7 +92,7 @@ public class PaymentsServiceTests
                 , Times.Never);    }
 
     [Test]
-    public async Task GivenValidRequest_WhenRefreshStatusAsyncCalled_ThenReturnsExpectedResult()
+    public async Task RefreshStatusAsync_WithValidRequest_ReturnsExpectedResult()
     {
         // Arrange
         var request = _fixture.Create<RefreshPaymentStatusRequest>();
@@ -110,7 +112,7 @@ public class PaymentsServiceTests
     }
 
     [Test]
-    public async Task GivenInvalidPaymentId_WhenRefreshStatusAsyncCalled_ThenReturnsFailureResult()
+    public async Task RefreshStatusAsync_WithInvalidPaymentId_ReturnsFailureResult()
     {
         // Arrange
         var request = _fixture.Build<RefreshPaymentStatusRequest>()
@@ -130,7 +132,7 @@ public class PaymentsServiceTests
     }
 
     [Test]
-    public async Task GivenCancellationToken_WhenCreatePaymentAsyncCalled_ThenCancellationTokenIsPassed()
+    public async Task CreatePaymentAsync_WithCancellationToken_CancellationTokenIsPassed()
     {
         // Arrange
         var request = _fixture.Build<CreatePaymentRequest>()
@@ -153,7 +155,7 @@ public class PaymentsServiceTests
     }
 
     [Test]
-    public async Task GivenCancellationToken_WhenRefreshStatusAsyncCalled_ThenCancellationTokenIsPassed()
+    public async Task RefreshStatusAsync_WithCancellationToken_CancellationTokenIsPassed()
     {
         // Arrange
         var request = _fixture.Create<RefreshPaymentStatusRequest>();
